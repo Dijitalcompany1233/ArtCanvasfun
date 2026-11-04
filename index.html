@@ -14,14 +14,14 @@
       touch-action: none;
     }
     body, html {
-      width: 100%; height: 100%; overflow: hidden;
+      width: 100%; height: 100%; height: 100dvh; overflow: hidden;
       background-color: #1a1a1a;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       color: #fff;
     }
     
     #app-container {
-      display: flex; width: 100vw; height: 100vh; position: relative; flex-direction: row;
+      display: flex; width: 100vw; height: 100%; height: 100dvh; position: relative; flex-direction: row;
     }
 
     /* Sol Menü */
@@ -94,10 +94,10 @@
     #brush-bar {
       display: flex; justify-content: center; align-items: center; gap: 10px; background: rgba(0,0,0,0.15); padding: 4px; border-radius: 8px;
     }
-    .size-btn, .admin-shield-btn {
+    .size-btn {
       background: #d9822b; border: 2px solid #3d2105; padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 12px; color: #000; cursor: pointer;
     }
-    .size-btn.active, .admin-shield-btn.active { background: #000; color: #fff; border-color: #fff; }
+    .size-btn.active { background: #000; color: #fff; border-color: #fff; }
 
     .palette-row { display: flex; gap: 8px; overflow-x: auto; padding: 2px; justify-content: flex-start; }
     .palette-row::-webkit-scrollbar { display: none; }
@@ -137,7 +137,6 @@
     }
     .profile-card h3 { color: #f3a64a; font-size: 20px; }
     .user-id-badge { background: #222; border: 1px solid #555; padding: 4px 12px; border-radius: 12px; font-size: 13px; color: #fca038; font-weight: bold; }
-    .admin-badge { background: #e74c3c; color: #fff; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; display: none; }
     
     .avatar-editor-container {
       display: flex; flex-direction: column; align-items: center; gap: 8px; background: #222; padding: 10px; border-radius: 10px; border: 2px solid #5c330a; width: 100%;
@@ -173,7 +172,11 @@
 
     @media (max-width: 600px) and (orientation: portrait) {
       #app-container { flex-direction: column-reverse; }
-      #sidebar { width: 100%; height: 60px; flex-direction: row; justify-content: space-around; padding: 0 5px; border-right: none; border-top: 4px solid #5c330a; overflow-x: auto; }
+      #sidebar { 
+        width: 100%; height: 60px; flex-direction: row; justify-content: space-around; 
+        padding: 0 5px; border-right: none; border-top: 4px solid #5c330a; overflow-x: auto;
+        padding-bottom: env(safe-area-inset-bottom);
+      }
       .side-btn { width: 42px; height: 42px; font-size: 16px; }
     }
   </style>
@@ -201,17 +204,17 @@
         <div class="canvas-card" onclick="openCanvas('classic', 128, 'Klasik Tuval')">
           <div class="card-icon">🎨</div>
           <div class="card-title">Klasik Tuval</div>
-          <div class="card-desc">128x128 | Her 5sn'de Piksel Yenilenir</div>
+          <div class="card-desc">128x128 | Her 50sn'de 100 Piksel</div>
         </div>
         <div class="canvas-card" onclick="openCanvas('huge', 1024, 'Devasa Tuval')">
           <div class="card-icon">🌌</div>
           <div class="card-title">Devasa Tuval</div>
-          <div class="card-desc">1024x1024 | Her 5sn'de Piksel Yenilenir</div>
+          <div class="card-desc">1024x1024 | Her 5sn'de 10 Piksel</div>
         </div>
         <div class="canvas-card" onclick="openCanvas('world', 1024, 'Dünya Haritası')">
           <div class="card-icon">🌍</div>
           <div class="card-title">Dünya Haritası</div>
-          <div class="card-desc">1024x1024 | Her 5sn'de Piksel Yenilenir</div>
+          <div class="card-desc">1024x1024 | Her 5sn'de 1 Piksel</div>
         </div>
       </div>
     </div>
@@ -232,8 +235,6 @@
           <button class="size-btn" id="btn-size-3" onclick="setBrushSize(3)">3x3</button>
           <button class="size-btn" id="btn-size-5" onclick="setBrushSize(5)">5x5</button>
           <button class="size-btn" id="btn-size-10" onclick="setBrushSize(10)">10x10</button>
-          <button class="admin-shield-btn" id="btn-shield" onclick="toggleShieldMode()" style="display:none;" title="Korumalı Piksel Modu">🛡️ Kalkan</button>
-          <button class="admin-shield-btn" id="btn-unshield" onclick="toggleUnshieldMode()" style="display:none;" title="Koruma Kaldırma Modu">❌🛡️ Kaldır</button>
         </div>
         <div class="palette-row">
           <div class="color-box selected" style="background:#000000" data-color="#000000"></div>
@@ -264,7 +265,6 @@
         <h3>Profil Kartı</h3>
         <div style="display:flex; gap:8px; align-items:center;">
           <div class="user-id-badge" id="user-id-display">ID: #0001</div>
-          <div class="admin-badge" id="admin-tag">YÖNETİCİ</div>
         </div>
         
         <div class="avatar-editor-container">
@@ -298,8 +298,8 @@
           <input type="text" id="username-input" value="Yıldırım">
         </div>
 
-        <button onclick="saveProfile()">Profili Kaydet</button>
-        <button style="background:#444; font-size:12px; padding:6px;" onclick="logoutAccount()">Oturumu Kapat (Cache Temizle)</button>
+        <button onclick="saveProfileToFirebase()">Profili Kaydet (Cloud)</button>
+        <button style="background:#444; font-size:12px; padding:6px;" onclick="logoutAccount()">Oturumu Kapat</button>
       </div>
     </div>
 
@@ -307,17 +307,13 @@
     <div id="login-view" class="view-page">
       <div class="profile-card">
         <h3>Hesap Girişi</h3>
-        <p style="font-size:12px; color:#aaa; text-align:center;">Cache anahtarı bulunamadı. Lütfen giriş yapın veya yeni profil oluşturun.</p>
+        <p style="font-size:12px; color:#aaa; text-align:center;">Hızlı giriş anahtarın ile otomatik bağlan veya yeni hesap oluştur.</p>
         <div class="input-group">
-          <label>Kullanıcı ID (Örn: #0001):</label>
-          <input type="text" id="login-id-input" placeholder="#0001">
+          <label>Giriş Anahtarı (Cache Token):</label>
+          <input type="text" id="login-token-input" placeholder="Anahtarını buraya yapıştır...">
         </div>
-        <div class="input-group">
-          <label>Şifre:</label>
-          <input type="password" id="login-pass-input" placeholder="Şifreniz">
-        </div>
-        <button onclick="loginAccount()">Giriş Yap</button>
-        <button style="background:#3498db;" onclick="createNewAccount()">Yeni Profil Oluştur</button>
+        <button onclick="loginWithToken()">Anahtar ile Giriş Yap</button>
+        <button style="background:#3498db;" onclick="createNewAccountCloud()">Yeni Cloud Hesap Oluştur</button>
       </div>
     </div>
 
@@ -385,10 +381,7 @@
           </div>
           <button style="width:auto; padding:6px 12px; background:#e74c3c;" onclick="leaveFaction()">Klandan Ayrıl</button>
         </div>
-        <div style="display:flex; gap:10px; width:100%; margin-top:5px;">
-          <button style="flex:1; background:#3498db;" onclick="showFactionMembers()">Üyeler</button>
-        </div>
-        <div class="chat-container" style="flex:1; width:100%; border:2px solid #5c330a; border-radius:8px;">
+        <div class="chat-container" style="flex:1; width:100%; border:2px solid #5c330a; border-radius:8px; margin-top:10px;">
           <div style="background:#111; padding:6px; font-size:12px; color:#f3a64a; text-align:center; font-weight:bold;">Klan İçi Sohbet</div>
           <div id="faction-chat-messages" class="chat-messages" style="background:#1c1c1c;"></div>
           <div class="chat-input-area" style="height:50px;">
@@ -411,7 +404,7 @@
       </div>
     </div>
 
-    <!-- 7. SEARCH (KULLANICI ARAMA) -->
+    <!-- 7. SEARCH -->
     <div id="search-view" class="view-page" style="flex-direction:column; align-items:center; padding:30px;">
       <div class="profile-card" style="width:100%; max-width:400px;">
         <h3 style="color:#f3a64a;">Kullanıcı Ara</h3>
@@ -432,20 +425,15 @@
       </div>
       
       <div class="setting-card" style="flex-direction:column; align-items:flex-start; gap:8px;">
-        <b style="color:#f3a64a;">Hakkında</b>
+        <b style="color:#f3a64a;">Hakkında (ZMD)</b>
         <div style="font-size:12px; color:#ccc; line-height:1.5; width:100%;">
-          <b>Sürüm:</b> beta 0.1<br>
-          <b>Marka:</b> DIJITAL<br><br>
-          <b style="color:#fca038;">Ekibimiz: (ZMD)</b><br>
+          <b>Sürüm:</b> beta 0.1 (Cloud Firebase Entegre)<br>
+          <b>Marka:</b> DIJITAL<br>
           • Yıldırım123 (Ana Geliştirici)<br>
           • Alpay TTF (Tasarımcı)<br>
           • Hexada (Varyant geliştirici)<br>
-          • Berat (En önde gelen test uzmanı)<br>
-          • Fatih kılıc (Her yerde admin)<br><br>
-          <b style="color:#fca038;">Projeye En Çok Katkıda Bulunanlar ♥︎</b><br>
-          • GEMINI pro 3.1 (Tüm kod ve tasarım)<br>
-          • ChatGPT (Hata çözen)<br>
-          • Yıldırım123 (Fikir sahibi)
+          • Berat (Test Uzmanı)<br>
+          • Fatih Kılıç (Moderatör)
         </div>
       </div>
     </div>
@@ -453,7 +441,7 @@
   </div>
 </div>
 
-<!-- Profil İnceleme Modalı -->
+<!-- Modallar -->
 <div id="inspect-modal">
   <div class="inspect-content">
     <button class="close-modal" onclick="closeInspect()">✕</button>
@@ -465,73 +453,27 @@
       <div>Favori Renk: <span id="inspect-fav">-</span></div>
       <div>Klan: <span id="inspect-faction">-</span></div>
     </div>
-    <div id="admin-actions-container" style="display:none; width:100%; gap:6px; flex-direction:column;">
-      <button style="background:#e74c3c;" onclick="adminBanUser()">Kullanıcıyı Banla (BAN)</button>
-      <button style="background:#c0392b;" onclick="adminDeleteUser()">Profili Sil (DELETE)</button>
-    </div>
   </div>
 </div>
-
-<!-- Sohbet Tıklama Eylem Modalı -->
-<div id="user-action-modal">
-  <div class="inspect-content">
-    <button class="close-modal" onclick="closeUserAction()">✕</button>
-    <h3 id="action-username" style="color:#f3a64a;">Kullanıcı</h3>
-    <button onclick="actionInspect()">Profili İncele</button>
-    <button onclick="actionPing()">Sohbette Ping At</button>
-    <button onclick="actionDM()" style="background:#3498db;">Özel Mesaj (DM)</button>
-  </div>
-</div>
-
-<!-- Klan Üyeleri Modalı -->
-<div id="members-modal">
-  <div class="inspect-content" style="width:340px; max-height:80%; overflow-y:auto;">
-    <button class="close-modal" onclick="document.getElementById('members-modal').style.display='none'">✕</button>
-    <h3 style="color:#f3a64a;">Klan Üyeleri</h3>
-    <div id="members-list-container" style="width:100%; display:flex; flex-direction:column; gap:8px;"></div>
-  </div>
-</div>
-
-<!-- FIREBASE SDK BAĞLANTISI -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getDatabase, ref, set, onValue, push, get, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-  const firebaseConfig = {
-    databaseURL: "https://artcanvasfun-default-rtdb.europe-west1.firebasedatabase.app/"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-
-  window.db = db;
-  window.ref = ref;
-  window.set = set;
-  window.onValue = onValue;
-  window.push = push;
-  window.get = get;
-  window.child = child;
-</script>
 
 <script>
+  // ==========================================
+  // FIREBASE CLOUD BAĞLANTI URL YAPISI
+  // ==========================================
+  const FIREBASE_DB_URL = "https://artcanvasfun-default-rtdb.europe-west1.firebasedatabase.app/"; 
+
   let currentCanvasId = 'classic';
   let canvasSize = 128;
   let currentCanvasName = 'Klasik Tuval';
 
-  // CACHE (OTURUM) ANAHTARI KONTROLÜ
-  let sessionAuthKey = localStorage.getItem('art_session_auth_key');
-  let userId = localStorage.getItem('art_user_id') || null;
-  let username = localStorage.getItem('art_username') || 'Yıldırım';
-  let userPass = localStorage.getItem('art_user_pass') || '';
-  let avatarDataURL = localStorage.getItem('art_avatar_data') || null;
-
-  let totalPixelsPlaced = parseInt(localStorage.getItem('art_stat_total') || '0');
-  let colorCounts = JSON.parse(localStorage.getItem('art_stat_colors') || '{}');
-  let isBanned = false;
-
-  let isShieldActive = false;
-  let isUnshieldActive = false;
-  let protectedPixels = JSON.parse(localStorage.getItem('art_protected_pixels') || '{}');
+  // Cache'de sadece hızlı giriş (hızlı anahtar) tutulacak
+  let userToken = localStorage.getItem('art_fast_token') || null;
+  let userId = null;
+  let username = 'Yıldırım';
+  let avatarDataURL = null;
+  let totalPixelsPlaced = 0;
+  let colorCounts = {};
+  let myFaction = null;
 
   let pixelQuota = 100;
   let maxQuota = 100;
@@ -541,12 +483,6 @@
   let isDrawMode = true;
   let brushSize = 1;
   let showGrid = false;
-
-  let myFaction = JSON.parse(localStorage.getItem('art_my_faction') || 'null');
-  let activeTargetUser = null;
-  let inspectTargetUser = null;
-
-  let scale = 3, panX = 0, panY = 0;
 
   const viewport = document.getElementById('viewport');
   const canvas = document.getElementById('pixelCanvas');
@@ -559,186 +495,182 @@
   const factionFlagCanvas = document.getElementById('factionFlagCanvas');
   const factionFlagCtx = factionFlagCanvas.getContext('2d');
 
-  window.onload = () => {
-    // Eğer Cache'de geçerli bir oturum anahtarı yoksa giriş ekranına yönlendir
-    if (!sessionAuthKey || !userId) {
+  window.onload = async () => {
+    if (!userToken) {
+      switchView('login');
+      return;
+    }
+    await loadUserDataFromCloud(userToken);
+    initSubCanvases();
+    setupEvents();
+    startCooldownTimer();
+    renderFactionUI();
+    loadCanvasDataFromCloud();
+  };
+
+  window.onresize = () => applyTransform();
+
+  // Sadece hızlı profil girişi için rastgele token üretici
+  function generateToken() {
+    return 'zmd_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
+  }
+
+  async function createNewAccountCloud() {
+    let newId = '#' + Math.floor(1000 + Math.random() * 9000);
+    let token = generateToken();
+    let initialData = {
+      id: newId,
+      token: token,
+      name: "Oyuncu_" + newId,
+      totalPixels: 0,
+      colorCounts: {},
+      avatar: null,
+      faction: null
+    };
+
+    let res = await fetch(`${FIREBASE_DB_URL}/users/${newId.replace('#','')}.json`, {
+      method: 'PUT',
+      body: JSON.stringify(initialData)
+    });
+
+    if (res.ok) {
+      localStorage.setItem('art_fast_token', token);
+      alert(`Cloud Hesap Oluşturuldu!\nID: ${newId}\nGiriş Anahtarınız tarayıcınıza kaydedildi.`);
+      location.reload();
+    } else {
+      alert("Bağlantı hatası oluştu!");
+    }
+  }
+
+  async function loadUserDataFromCloud(token) {
+    let res = await fetch(`${FIREBASE_DB_URL}/users.json`);
+    let users = await res.json();
+    if (users) {
+      for (let key in users) {
+        if (users[key].token === token) {
+          userId = users[key].id;
+          username = users[key].name;
+          avatarDataURL = users[key].avatar;
+          totalPixelsPlaced = users[key].totalPixels || 0;
+          colorCounts = users[key].colorCounts || {};
+          myFaction = users[key].faction || null;
+          break;
+        }
+      }
+    }
+
+    if (!userId) {
+      localStorage.removeItem('art_fast_token');
       switchView('login');
       return;
     }
 
     document.getElementById('username-input').value = username;
     document.getElementById('user-id-display').innerText = `ID: ${userId}`;
-    
-    checkAdminStatus();
     updateStatsDisplay();
-    initSubCanvases();
-    setupEvents();
-    startCooldownTimer();
-    renderFactionUI();
-
-    // Firebase Canlı Senkronizasyonları Başlat
-    setTimeout(() => {
-      initFirebaseSync();
-      initFirebaseChatSync();
-      loadUserProfileFromCloud();
-    }, 1000);
-  };
-
-  // Firebase Üzerinden Profil Verilerini Çek
-  function loadUserProfileFromCloud() {
-    if (!window.db || !userId) return;
-    const userRef = window.ref(window.db, `users/${userId.replace('#', '')}`);
-    window.get(userRef).then((snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        username = data.username || username;
-        totalPixelsPlaced = data.totalPixels || totalPixelsPlaced;
-        document.getElementById('username-input').value = username;
-        updateStatsDisplay();
-      }
-    });
   }
 
-  // Profil Verilerini Firebase'e Kaydet
-  function syncProfileToCloud() {
-    if (!window.db || !userId) return;
-    const cleanId = userId.replace('#', '');
-    window.set(window.ref(window.db, `users/${cleanId}`), {
-      id: userId,
-      username: username,
-      avatar: avatarDataURL,
-      totalPixels: totalPixelsPlaced,
-      faction: myFaction ? myFaction.name : 'Yok'
-    });
-  }
-
-  // Firebase Canlı Kanvas Dinleyicisi
-  function initFirebaseSync() {
-    if (!window.db) return;
-    const canvasRef = window.ref(window.db, `canvases/${currentCanvasId}`);
-    window.onValue(canvasRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, canvasSize, canvasSize);
-        for (let key in data) {
-          let parts = key.split('_');
-          let x = parseInt(parts[0]);
-          let y = parseInt(parts[1]);
-          ctx.fillStyle = data[key];
-          ctx.fillRect(x, y, 1, 1);
-        }
-        drawGridLines();
-      }
-    });
-  }
-
-  // Firebase Canlı Sohbet Dinleyicisi
-  function initFirebaseChatSync() {
-    if (!window.db) return;
-    const chatRef = window.ref(window.db, 'chats/global');
-    window.onValue(chatRef, (snapshot) => {
-      const data = snapshot.val();
-      const chatBox = document.getElementById('chat-messages');
-      chatBox.innerHTML = '';
-      if (data) {
-        for (let id in data) {
-          let m = data[id];
-          appendMessageUI('chat-messages', m.name, m.uid, m.avatar, m.text, false);
-        }
-      }
-    });
-  }
-
-  function generateNewID() {
-    let lastID = parseInt(localStorage.getItem('art_global_id_counter') || '1');
-    let formattedID = '#' + String(lastID).padStart(4, '0');
-    localStorage.setItem('art_global_id_counter', lastID + 1);
-    return formattedID;
-  }
-
-  function generateRandomPassword() {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%";
-    let pass = "";
-    for (let i = 0; i < 8; i++) {
-      pass += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return pass;
-  }
-
-  function createNewAccount() {
-    userId = generateNewID();
-    username = "Oyuncu_" + userId;
-    userPass = generateRandomPassword();
-    sessionAuthKey = "auth_token_" + Math.random().toString(36).substring(2);
-    avatarDataURL = null;
-    totalPixelsPlaced = 0;
-    colorCounts = {};
-
-    saveSessionAndCache();
-    syncProfileToCloud();
-    alert(`Yeni hesap oluşturuldu ve Cache anahtarı kaydedildi!\nID'niz: ${userId}\nŞifreniz: ${userPass}`);
-    location.reload();
-  }
-
-  function loginAccount() {
-    let inputId = document.getElementById('login-id-input').value.trim();
-    let inputPass = document.getElementById('login-pass-input').value.trim();
-
-    // Bulut tabanlı veya yerel şifre kontrolü
-    userId = inputId;
-    userPass = inputPass;
-    sessionAuthKey = "auth_token_" + Math.random().toString(36).substring(2);
-    
-    saveSessionAndCache();
-    alert("Giriş başarılı! Oturum cache'e kaydedildi.");
+  async function loginWithToken() {
+    let tokenInput = document.getElementById('login-token-input').value.trim();
+    if (!tokenInput) return;
+    localStorage.setItem('art_fast_token', tokenInput);
     location.reload();
   }
 
   function logoutAccount() {
-    // Cache'i temizle, oturumu düşür
-    localStorage.removeItem('art_session_auth_key');
-    localStorage.removeItem('art_user_id');
-    alert("Oturum kapatıldı, cache temizlendi!");
+    localStorage.removeItem('art_fast_token');
     location.reload();
   }
 
-  function saveSessionAndCache() {
-    localStorage.setItem('art_session_auth_key', sessionAuthKey);
-    localStorage.setItem('art_user_id', userId);
-    localStorage.setItem('art_user_pass', userPass);
-    localStorage.setItem('art_username', username);
-    localStorage.setItem('art_avatar_data', avatarDataURL || '');
+  async function saveProfileToFirebase() {
+    let inputVal = document.getElementById('username-input').value.trim();
+    if (!inputVal) { alert("Kullanıcı adı boş olamaz!"); return; }
+
+    username = inputVal;
+    avatarDataURL = avatarCanvas.toDataURL();
+
+    let cleanId = userId.replace('#','');
+    let payload = {
+      id: userId,
+      token: userToken,
+      name: username,
+      avatar: avatarDataURL,
+      totalPixels: totalPixelsPlaced,
+      colorCounts: colorCounts,
+      faction: myFaction
+    };
+
+    await fetch(`${FIREBASE_DB_URL}/users/${cleanId}.json`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload)
+    });
+
+    alert('Profil Firebase Cloud üzerine kaydedildi!');
+    switchView('home');
   }
 
-  function checkAdminStatus() {
-    if (userId && userId.startsWith('#XX')) {
-      document.getElementById('admin-tag').style.display = 'inline-block';
-      document.getElementById('btn-shield').style.display = 'inline-block';
-      document.getElementById('btn-unshield').style.display = 'inline-block';
+  // PİKSEL İSRAFI ÖNLEME MİMARİSİ (Aynı renge tıklayınca hak gitmez)
+  async function setPixelArea(startX, startY, color) {
+    for (let dx = 0; dx < brushSize; dx++) {
+      for (let dy = 0; dy < brushSize; dy++) {
+        let px = startX + dx, py = startY + dy;
+        if (px >= 0 && px < canvasSize && py >= 0 && py < canvasSize) {
+          
+          // Mevcut rengi kontrol et (Piksel israfını önleme mantığı)
+          let pixelKey = `${currentCanvasId}_${px}_${py}`;
+          let currentPixelColor = canvasDataCache[pixelKey] || '#ffffff';
+          if (currentPixelColor === color) {
+            continue; // Zaten aynı renk! Piksel ziyan edilmez, hak düşmez.
+          }
+
+          canvasDataCache[pixelKey] = color;
+          ctx.fillStyle = color;
+          ctx.fillRect(px, py, 1, 1);
+          totalPixelsPlaced++;
+          colorCounts[color] = (colorCounts[color] || 0) + 1;
+        }
+      }
     }
+    updateStatsDisplay();
+    saveCanvasDataToCloud();
   }
 
-  function toggleShieldMode() {
-    isShieldActive = !isShieldActive;
-    isUnshieldActive = false;
-    document.getElementById('btn-shield').classList.toggle('active', isShieldActive);
-    document.getElementById('btn-unshield').classList.remove('active');
+  let canvasDataCache = {};
+
+  async function saveCanvasDataToCloud() {
+    let cleanId = userId.replace('#','');
+    // Cloud senkronizasyonu
+    await fetch(`${FIREBASE_DB_URL}/canvas_state/${currentCanvasId}.json`, {
+      method: 'PUT',
+      body: JSON.stringify(canvasDataCache)
+    });
   }
 
-  function toggleUnshieldMode() {
-    isUnshieldActive = !isUnshieldActive;
-    isShieldActive = false;
-    document.getElementById('btn-unshield').classList.toggle('active', isUnshieldActive);
-    document.getElementById('btn-shield').classList.remove('active');
+  async function loadCanvasDataFromCloud() {
+    let res = await fetch(`${FIREBASE_DB_URL}/canvas_state/${currentCanvasId}.json`);
+    let data = await res.json();
+    initCanvas();
+    if (data) {
+      canvasDataCache = data;
+      for (let key in data) {
+        let parts = key.split('_');
+        if (parts[0] === currentCanvasId) {
+          let px = parseInt(parts[1]);
+          let py = parseInt(parts[2]);
+          ctx.fillStyle = data[key];
+          ctx.fillRect(px, py, 1, 1);
+        }
+      }
+    }
+    drawGridLines();
   }
 
   function startCooldownTimer() {
     setInterval(() => {
-      if (pixelQuota < maxQuota) {
-        pixelQuota = Math.min(maxQuota, pixelQuota + 1);
-        updateCooldownBadge();
-      }
+      if (currentCanvasId === 'classic') { maxQuota = 100; if (pixelQuota < maxQuota) pixelQuota = Math.min(maxQuota, pixelQuota + 20); }
+      else if (currentCanvasId === 'huge') { maxQuota = 50; if (pixelQuota < maxQuota) pixelQuota = Math.min(maxQuota, pixelQuota + 10); }
+      else if (currentCanvasId === 'world') { maxQuota = 10; if (pixelQuota < maxQuota) pixelQuota = Math.min(maxQuota, pixelQuota + 1); }
+      updateCooldownBadge();
     }, 5000);
   }
 
@@ -749,7 +681,6 @@
   function initSubCanvases() {
     avatarCtx.fillStyle = '#ffffff'; avatarCtx.fillRect(0, 0, 15, 15);
     if (avatarDataURL) { let img = new Image(); img.onload = () => avatarCtx.drawImage(img, 0, 0); img.src = avatarDataURL; }
-
     factionFlagCtx.fillStyle = '#ffffff'; factionFlagCtx.fillRect(0, 0, 15, 15);
 
     setupMiniCanvasDrawing(avatarCanvas, avatarCtx, '#avatar-palette .mini-color-box', (c) => avatarColor = c);
@@ -789,11 +720,9 @@
   function openCanvas(id, size, name) {
     currentCanvasId = id; canvasSize = size; currentCanvasName = name;
     canvas.width = canvasSize; canvas.height = canvasSize;
-    maxQuota = (id === 'classic') ? 100 : (id === 'huge') ? 50 : 10;
-    pixelQuota = maxQuota;
+    pixelQuota = (id === 'classic') ? 100 : (id === 'huge') ? 50 : 10;
     updateCooldownBadge();
-    initCanvas(); switchView('canvas'); centerCanvas();
-    initFirebaseSync();
+    loadCanvasDataFromCloud(); switchView('canvas'); centerCanvas();
   }
 
   function initCanvas() {
@@ -916,48 +845,16 @@
     setPixelArea(Math.floor((e.clientX - rect.left) / scale), Math.floor((e.clientY - rect.top) / scale), currentColor);
   }
 
-  // Pikselleri ve İstatistikleri Firebase'e İşleme
-  function setPixelArea(startX, startY, color) {
-    if (pixelQuota <= 0) { alert("Piksel hakkınız bitti! Dolmasını bekleyin."); return; }
-
-    let pixelsDrawn = 0;
-    for (let dx = 0; dx < brushSize; dx++) {
-      for (let dy = 0; dy < brushSize; dy++) {
-        let px = startX + dx, py = startY + dy;
-        if (px >= 0 && px < canvasSize && py >= 0 && py < canvasSize) {
-          let key = `${px}_${py}`;
-          pixelsDrawn++;
-          totalPixelsPlaced++;
-          colorCounts[color] = (colorCounts[color] || 0) + 1;
-
-          if (window.db) {
-            window.set(window.ref(window.db, `canvases/${currentCanvasId}/${key}`), color);
-          }
-        }
-      }
-    }
-
-    if (pixelsDrawn > 0) {
-      pixelQuota = Math.max(0, pixelQuota - 1);
-      updateCooldownBadge();
-      updateStatsDisplay();
-      syncProfileToCloud();
-    }
-  }
-
   function toggleGridSetting() {
     showGrid = document.getElementById('setting-grid').checked;
-    initCanvas();
+    loadCanvasDataFromCloud();
   }
 
   function updateStatsDisplay() {
     document.getElementById('stat-total').innerText = totalPixelsPlaced;
-    let favColor = Object.keys(colorCounts).length > 0 ? Object.keys(colorCounts).reduce((a, b) => colorCounts[a] > colorCounts[b] ? a : b, '-') : '-';
+    let favColor = Object.keys(colorCounts).length > 0 ? Object.keys(colorCounts).reduce((a, b) => colorCounts[a] > colorCounts[b] ? a : b) : '-';
     document.getElementById('stat-fav-color').innerText = favColor;
     document.getElementById('stat-faction').innerText = myFaction ? myFaction.name : 'Yok';
-
-    localStorage.setItem('art_stat_total', totalPixelsPlaced);
-    localStorage.setItem('art_stat_colors', JSON.stringify(colorCounts));
   }
 
   function switchView(viewName) {
@@ -968,68 +865,34 @@
     if (btn) btn.classList.add('active');
   }
 
-  function saveProfile() {
-    let inputVal = document.getElementById('username-input').value.trim();
-    if (inputVal) {
-      username = inputVal;
-      avatarDataURL = avatarCanvas.toDataURL();
-      saveSessionAndCache();
-      syncProfileToCloud();
-      alert('Profil güncellendi ve buluta kaydedildi!');
-      switchView('home');
-    } else {
-      alert("Kullanıcı adı boş olamaz!");
-    }
-  }
-
-  function createFaction() {
+  async function createFaction() {
     let name = document.getElementById('new-faction-name').value.trim();
     let desc = document.getElementById('new-faction-desc').value.trim();
     if (!name) { alert("Klan adı boş olamaz!"); return; }
 
     let fid = '#FA' + Math.floor(10 + Math.random() * 90);
-    myFaction = { id: fid, name: name, desc: desc, flag: factionFlagCanvas.toDataURL(), members: [{name: username, id: userId, avatar: avatarDataURL, role: 'Lider'}] };
+    myFaction = { id: fid, name: name, desc: desc, flag: factionFlagCanvas.toDataURL(), members: [{name: username, id: userId, role: 'Lider'}] };
     
-    localStorage.setItem('art_my_faction', JSON.stringify(myFaction));
-    
-    // Klana ait verileri Firebase'e kaydet
-    if (window.db) {
-      window.set(window.ref(window.db, `factions/${fid}`), myFaction);
-    }
-
-    renderFactionUI(); 
-    updateStatsDisplay();
-    syncProfileToCloud();
+    await saveProfileToFirebase();
+    renderFactionUI(); updateStatsDisplay();
     alert(`Klan kuruldu! FID: ${fid}`);
   }
 
-  function joinFaction() {
+  async function joinFaction() {
     let fid = document.getElementById('join-fid-input').value.trim();
     if (!fid) return;
+    myFaction = { id: fid, name: "Klan " + fid, desc: "Açıklama", members: [{name: username, id: userId, role: 'Üye'}] };
     
-    if (window.db) {
-      window.get(window.child(window.ref(window.db), `factions/${fid}`)).then((snapshot) => {
-        if (snapshot.exists()) {
-          myFaction = snapshot.val();
-          localStorage.setItem('art_my_faction', JSON.stringify(myFaction));
-          renderFactionUI();
-          updateStatsDisplay();
-          syncProfileToCloud();
-          alert("Klana başarıyla katıldın!");
-        } else {
-          alert("Böyle bir klan bulunamadı!");
-        }
-      });
-    }
+    await saveProfileToFirebase();
+    renderFactionUI(); updateStatsDisplay();
+    alert("Klana katıldın!");
   }
 
-  function leaveFaction() {
+  async function leaveFaction() {
     if (confirm("Klandan çıkmak istiyor musun?")) {
-      myFaction = null; 
-      localStorage.removeItem('art_my_faction');
-      renderFactionUI(); 
-      updateStatsDisplay();
-      syncProfileToCloud();
+      myFaction = null;
+      await saveProfileToFirebase();
+      renderFactionUI(); updateStatsDisplay();
     }
   }
 
@@ -1046,152 +909,59 @@
     }
   }
 
-  function showFactionMembers() {
-    if (!myFaction) return;
-    let container = document.getElementById('members-list-container'); container.innerHTML = '';
-    myFaction.members.forEach(m => {
-      let div = document.createElement('div'); div.className = 'member-item';
-      div.innerHTML = `<div style="display:flex;gap:8px;align-items:center;"><img style="width:30px;height:30px;border-radius:4px;image-rendering:pixelated;background:#fff;" src="${m.avatar||''}"><div><b>${m.name}</b> <span style="font-size:10px;color:#888;">${m.id}</span></div></div><span style="font-size:11px;color:#f3a64a;">${m.role}</span>`;
-      container.appendChild(div);
-    });
-    document.getElementById('members-modal').style.display = 'flex';
-  }
-
-  // Mesajları Firebase'e Gönderme
   function sendChatMessage() {
     const input = document.getElementById('chat-input');
     const msg = input.value.trim();
-    if (msg && window.db) {
-      const chatRef = window.ref(window.db, 'chats/global');
-      window.push(chatRef, {
-        uid: userId,
-        name: username,
-        avatar: avatarDataURL,
-        text: msg,
-        time: Date.now()
-      });
-      input.value = '';
-    }
+    if (msg) { appendMessage('chat-messages', username, userId, avatarDataURL, msg, false); input.value = ''; }
   }
 
   function sendFactionChatMessage() {
     const input = document.getElementById('faction-chat-input');
     const msg = input.value.trim();
-    if (msg && myFaction && window.db) {
-      const factionChatRef = window.ref(window.db, `factions/${myFaction.id}/chat`);
-      window.push(factionChatRef, {
-        uid: userId,
-        name: username,
-        avatar: avatarDataURL,
-        text: '[Klan] ' + msg,
-        time: Date.now()
-      });
-      input.value = '';
-    }
+    if (msg && myFaction) { appendMessage('faction-chat-messages', username, userId, avatarDataURL, '[Klan] ' + msg, false); input.value = ''; }
   }
 
   function sendPrivateMessage() {
     const input = document.getElementById('private-chat-input');
     const msg = input.value.trim();
-    if (msg && activeTargetUser) {
-      appendMessageUI('private-chat-messages', username, userId, avatarDataURL, `(DM -> ${activeTargetUser.name}) ${msg}`, false);
-      input.value = '';
-    }
+    if (msg) { appendMessage('private-chat-messages', username, userId, avatarDataURL, `(DM) ${msg}`, false); input.value = ''; }
   }
 
-  function appendMessageUI(containerId, name, id, avatar, text, isPinged) {
+  function appendMessage(containerId, name, id, avatar, text, isPinged) {
     const chatBox = document.getElementById(containerId);
     const msgDiv = document.createElement('div'); msgDiv.className = 'msg' + (isPinged ? ' pinged' : '');
-    let avatarImg = avatar || '';
-    let favColor = Object.keys(colorCounts).length > 0 ? Object.keys(colorCounts)[0] : '-';
-    let factionStr = myFaction ? myFaction.name : 'Yok';
-
     msgDiv.innerHTML = `
-      <img class="msg-avatar" src="${avatarImg}" onclick="openUserAction('${name}', '${id}', '${avatar}', ${totalPixelsPlaced}, '${favColor}', '${factionStr}')">
+      <img class="msg-avatar" src="${avatar || ''}">
       <div class="msg-body">
-        <div class="sender" onclick="openUserAction('${name}', '${id}', '${avatar}', ${totalPixelsPlaced}, '${favColor}', '${factionStr}')">${name}<span class="tag">${id}</span></div>
+        <div class="sender">${name}<span class="tag">${id}</span></div>
         <div>${text}</div>
       </div>
     `;
     chatBox.appendChild(msgDiv); chatBox.scrollTop = chatBox.scrollHeight;
   }
 
-  function searchUserProfile() {
+  async function searchUserProfile() {
     let queryId = document.getElementById('search-id-input').value.trim();
-    if (!queryId || !window.db) return;
+    if (!queryId) return;
 
-    let cleanId = queryId.replace('#', '');
-    window.get(window.child(window.ref(window.db), `users/${cleanId}`)).then((snapshot) => {
-      if (snapshot.exists()) {
-        const u = snapshot.val();
-        inspectUser(u.username, u.id, u.avatar, u.totalPixels || 0, '-', u.faction || 'Yok');
-      } else {
-        alert("Bulut veritabanında bu ID'ye sahip kullanıcı bulunamadı!");
-      }
-    });
-  }
-
-  function openUserAction(name, id, avatar, total, fav, faction) {
-    activeTargetUser = {name, id, avatar, total, fav, faction};
-    document.getElementById('action-username').innerText = name + " " + id;
-    document.getElementById('user-action-modal').style.display = 'flex';
-  }
-  function closeUserAction() { document.getElementById('user-action-modal').style.display = 'none'; }
-
-  function actionInspect() {
-    closeUserAction();
-    if (activeTargetUser) {
-      inspectUser(activeTargetUser.name, activeTargetUser.id, activeTargetUser.avatar, activeTargetUser.total, activeTargetUser.fav, activeTargetUser.faction);
+    let res = await fetch(`${FIREBASE_DB_URL}/users/${queryId.replace('#','')}.json`);
+    let user = await res.json();
+    if (user) {
+      inspectUser(user.name, user.id, user.avatar, user.totalPixels || 0, user.faction ? user.faction.name : 'Yok');
+    } else {
+      alert("Bu ID'ye sahip bulut kullanıcısı bulunamadı!");
     }
   }
-  function actionPing() {
-    closeUserAction();
-    if (activeTargetUser) { 
-      if(window.db) {
-        window.push(window.ref(window.db, 'chats/global'), {
-          uid: userId, name: username, avatar: avatarDataURL, text: `@${activeTargetUser.name} seslendi!`, time: Date.now()
-        });
-      }
-      switchView('chat'); 
-    }
-  }
-  function actionDM() {
-    closeUserAction();
-    if (activeTargetUser) { switchView('private'); alert(`${activeTargetUser.name} ile özel sohbet açıldı.`); }
-  }
 
-  function inspectUser(name, id, avatar, total, fav, faction) {
-    inspectTargetUser = {id};
+  function inspectUser(name, id, avatar, total, faction) {
     document.getElementById('inspect-name').innerText = name;
     document.getElementById('inspect-id').innerText = id;
     document.getElementById('inspect-avatar').src = avatar || '';
     document.getElementById('inspect-total').innerText = total;
-    document.getElementById('inspect-fav').innerText = fav;
     document.getElementById('inspect-faction').innerText = faction;
-
-    let isAdmin = userId && userId.startsWith('#XX');
-    document.getElementById('admin-actions-container').style.display = isAdmin ? 'flex' : 'none';
-
     document.getElementById('inspect-modal').style.display = 'flex';
   }
   function closeInspect() { document.getElementById('inspect-modal').style.display = 'none'; }
-
-  function adminBanUser() {
-    if (inspectTargetUser && window.db) {
-      window.set(window.ref(window.db, `banned/${inspectTargetUser.id.replace('#','')}`), true);
-      alert(`Kullanıcı (${inspectTargetUser.id}) buluttan BANLANDI!`);
-      closeInspect();
-    }
-  }
-
-  function adminDeleteUser() {
-    if (inspectTargetUser && window.db) {
-      window.set(window.ref(window.db, `users/${inspectTargetUser.id.replace('#','')}`), null);
-      alert(`Kullanıcı profili (${inspectTargetUser.id}) buluttan silindi!`);
-      closeInspect();
-    }
-  }
 </script>
 </body>
 </html>
-y
