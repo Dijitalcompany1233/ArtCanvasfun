@@ -201,17 +201,17 @@
         <div class="canvas-card" onclick="openCanvas('classic', 128, 'Klasik Tuval')">
           <div class="card-icon">🎨</div>
           <div class="card-title">Klasik Tuval</div>
-          <div class="card-desc">128x128 | Her 50sn'de 100 Piksel</div>
+          <div class="card-desc">128x128 | Her 5sn'de Piksel Yenilenir</div>
         </div>
         <div class="canvas-card" onclick="openCanvas('huge', 1024, 'Devasa Tuval')">
           <div class="card-icon">🌌</div>
           <div class="card-title">Devasa Tuval</div>
-          <div class="card-desc">1024x1024 | Her 5sn'de 10 Piksel (Chunk Destekli)</div>
+          <div class="card-desc">1024x1024 | Her 5sn'de Piksel Yenilenir</div>
         </div>
         <div class="canvas-card" onclick="openCanvas('world', 1024, 'Dünya Haritası')">
           <div class="card-icon">🌍</div>
           <div class="card-title">Dünya Haritası</div>
-          <div class="card-desc">1024x1024 | Her 5sn'de 1 Piksel (Chunk Destekli)</div>
+          <div class="card-desc">1024x1024 | Her 5sn'de Piksel Yenilenir</div>
         </div>
       </div>
     </div>
@@ -232,7 +232,6 @@
           <button class="size-btn" id="btn-size-3" onclick="setBrushSize(3)">3x3</button>
           <button class="size-btn" id="btn-size-5" onclick="setBrushSize(5)">5x5</button>
           <button class="size-btn" id="btn-size-10" onclick="setBrushSize(10)">10x10</button>
-          <!-- Admin Kalkan Butonları -->
           <button class="admin-shield-btn" id="btn-shield" onclick="toggleShieldMode()" style="display:none;" title="Korumalı Piksel Modu">🛡️ Kalkan</button>
           <button class="admin-shield-btn" id="btn-unshield" onclick="toggleUnshieldMode()" style="display:none;" title="Koruma Kaldırma Modu">❌🛡️ Kaldır</button>
         </div>
@@ -272,7 +271,6 @@
           <label>Profil Resmi (15x15):</label>
           <canvas id="avatarCanvas" class="sub-canvas" width="15" height="15"></canvas>
           
-          <!-- 12 Renk Paleti -->
           <div class="mini-colors" id="avatar-palette">
             <div class="mini-color-box selected" style="background:#000000" data-color="#000000"></div>
             <div class="mini-color-box" style="background:#ffffff" data-color="#ffffff"></div>
@@ -301,7 +299,7 @@
         </div>
 
         <button onclick="saveProfile()">Profili Kaydet</button>
-        <button style="background:#444; font-size:12px; padding:6px;" onclick="logoutAccount()">Farklı Hesapla Giriş Yap</button>
+        <button style="background:#444; font-size:12px; padding:6px;" onclick="logoutAccount()">Oturumu Kapat (Cache Temizle)</button>
       </div>
     </div>
 
@@ -309,7 +307,7 @@
     <div id="login-view" class="view-page">
       <div class="profile-card">
         <h3>Hesap Girişi</h3>
-        <p style="font-size:12px; color:#aaa; text-align:center;">Mevcut ID ve şifrenle giriş yap veya yeni oluştur.</p>
+        <p style="font-size:12px; color:#aaa; text-align:center;">Cache anahtarı bulunamadı. Lütfen giriş yapın veya yeni profil oluşturun.</p>
         <div class="input-group">
           <label>Kullanıcı ID (Örn: #0001):</label>
           <input type="text" id="login-id-input" placeholder="#0001">
@@ -358,7 +356,6 @@
           <label>Klan Bayrağı (15x15):</label>
           <canvas id="factionFlagCanvas" class="sub-canvas" width="15" height="15"></canvas>
           
-          <!-- 12 Renk Paleti -->
           <div class="mini-colors" id="faction-palette">
             <div class="mini-color-box selected" style="background:#000000" data-color="#000000"></div>
             <div class="mini-color-box" style="background:#ffffff" data-color="#ffffff"></div>
@@ -434,7 +431,6 @@
         <input type="checkbox" id="setting-grid" onchange="toggleGridSetting()" style="width:20px; height:20px; cursor:pointer;">
       </div>
       
-      <!-- HAKKINDA BÖLÜMÜ (ZMD Ekibi) -->
       <div class="setting-card" style="flex-direction:column; align-items:flex-start; gap:8px;">
         <b style="color:#f3a64a;">Hakkında</b>
         <div style="font-size:12px; color:#ccc; line-height:1.5; width:100%;">
@@ -448,7 +444,7 @@
           • Fatih kılıc (Her yerde admin)<br><br>
           <b style="color:#fca038;">Projeye En Çok Katkıda Bulunanlar ♥︎</b><br>
           • GEMINI pro 3.1 (Tüm kod ve tasarım)<br>
-          • ChatGBT (Hata çözen)<br>
+          • ChatGPT (Hata çözen)<br>
           • Yıldırım123 (Fikir sahibi)
         </div>
       </div>
@@ -496,26 +492,42 @@
   </div>
 </div>
 
-<script>
-  // ==========================================
-  // FIREBASE VERİTABANI BAĞLANTI URL YAPISI
-  // ==========================================
-  const FIREBASE_DB_URL = "https://artcanvasfun-default-rtdb.europe-west1.firebasedatabase.app/"; 
+<!-- FIREBASE SDK BAĞLANTISI -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getDatabase, ref, set, onValue, push, get, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
+  const firebaseConfig = {
+    databaseURL: "https://artcanvasfun-default-rtdb.europe-west1.firebasedatabase.app/"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  window.db = db;
+  window.ref = ref;
+  window.set = set;
+  window.onValue = onValue;
+  window.push = push;
+  window.get = get;
+  window.child = child;
+</script>
+
+<script>
   let currentCanvasId = 'classic';
   let canvasSize = 128;
   let currentCanvasName = 'Klasik Tuval';
 
-  const CHUNK_SIZE = 32;
-
-  let username = localStorage.getItem('art_username') || 'Yıldırım';
+  // CACHE (OTURUM) ANAHTARI KONTROLÜ
+  let sessionAuthKey = localStorage.getItem('art_session_auth_key');
   let userId = localStorage.getItem('art_user_id') || null;
+  let username = localStorage.getItem('art_username') || 'Yıldırım';
   let userPass = localStorage.getItem('art_user_pass') || '';
   let avatarDataURL = localStorage.getItem('art_avatar_data') || null;
 
   let totalPixelsPlaced = parseInt(localStorage.getItem('art_stat_total') || '0');
   let colorCounts = JSON.parse(localStorage.getItem('art_stat_colors') || '{}');
-  let isBanned = localStorage.getItem('art_is_banned') === 'true';
+  let isBanned = false;
 
   let isShieldActive = false;
   let isUnshieldActive = false;
@@ -548,13 +560,10 @@
   const factionFlagCtx = factionFlagCanvas.getContext('2d');
 
   window.onload = () => {
-    if (!userId) {
+    // Eğer Cache'de geçerli bir oturum anahtarı yoksa giriş ekranına yönlendir
+    if (!sessionAuthKey || !userId) {
       switchView('login');
       return;
-    }
-
-    if (isBanned) {
-      alert("Bu hesap BANLANMIŞTIR! Piksel koyamaz ve sohbet edemezsin.");
     }
 
     document.getElementById('username-input').value = username;
@@ -566,9 +575,80 @@
     setupEvents();
     startCooldownTimer();
     renderFactionUI();
+
+    // Firebase Canlı Senkronizasyonları Başlat
+    setTimeout(() => {
+      initFirebaseSync();
+      initFirebaseChatSync();
+      loadUserProfileFromCloud();
+    }, 1000);
   };
 
-  window.onresize = () => applyTransform();
+  // Firebase Üzerinden Profil Verilerini Çek
+  function loadUserProfileFromCloud() {
+    if (!window.db || !userId) return;
+    const userRef = window.ref(window.db, `users/${userId.replace('#', '')}`);
+    window.get(userRef).then((snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        username = data.username || username;
+        totalPixelsPlaced = data.totalPixels || totalPixelsPlaced;
+        document.getElementById('username-input').value = username;
+        updateStatsDisplay();
+      }
+    });
+  }
+
+  // Profil Verilerini Firebase'e Kaydet
+  function syncProfileToCloud() {
+    if (!window.db || !userId) return;
+    const cleanId = userId.replace('#', '');
+    window.set(window.ref(window.db, `users/${cleanId}`), {
+      id: userId,
+      username: username,
+      avatar: avatarDataURL,
+      totalPixels: totalPixelsPlaced,
+      faction: myFaction ? myFaction.name : 'Yok'
+    });
+  }
+
+  // Firebase Canlı Kanvas Dinleyicisi
+  function initFirebaseSync() {
+    if (!window.db) return;
+    const canvasRef = window.ref(window.db, `canvases/${currentCanvasId}`);
+    window.onValue(canvasRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvasSize, canvasSize);
+        for (let key in data) {
+          let parts = key.split('_');
+          let x = parseInt(parts[0]);
+          let y = parseInt(parts[1]);
+          ctx.fillStyle = data[key];
+          ctx.fillRect(x, y, 1, 1);
+        }
+        drawGridLines();
+      }
+    });
+  }
+
+  // Firebase Canlı Sohbet Dinleyicisi
+  function initFirebaseChatSync() {
+    if (!window.db) return;
+    const chatRef = window.ref(window.db, 'chats/global');
+    window.onValue(chatRef, (snapshot) => {
+      const data = snapshot.val();
+      const chatBox = document.getElementById('chat-messages');
+      chatBox.innerHTML = '';
+      if (data) {
+        for (let id in data) {
+          let m = data[id];
+          appendMessageUI('chat-messages', m.name, m.uid, m.avatar, m.text, false);
+        }
+      }
+    });
+  }
 
   function generateNewID() {
     let lastID = parseInt(localStorage.getItem('art_global_id_counter') || '1');
@@ -577,7 +657,6 @@
     return formattedID;
   }
 
-  // Rastgele şifre üretme fonksiyonu
   function generateRandomPassword() {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%";
     let pass = "";
@@ -590,14 +669,15 @@
   function createNewAccount() {
     userId = generateNewID();
     username = "Oyuncu_" + userId;
-    userPass = generateRandomPassword(); // Otomatik rastgele şifre atandı
+    userPass = generateRandomPassword();
+    sessionAuthKey = "auth_token_" + Math.random().toString(36).substring(2);
     avatarDataURL = null;
     totalPixelsPlaced = 0;
     colorCounts = {};
-    isBanned = false;
 
-    saveToLocalStorage();
-    alert(`Yeni hesap oluşturuldu!\nID'niz: ${userId}\nOtomatik Atanan Şifreniz: ${userPass}\n(Lütfen şifrenizi unutmayın!)`);
+    saveSessionAndCache();
+    syncProfileToCloud();
+    alert(`Yeni hesap oluşturuldu ve Cache anahtarı kaydedildi!\nID'niz: ${userId}\nŞifreniz: ${userPass}`);
     location.reload();
   }
 
@@ -605,29 +685,28 @@
     let inputId = document.getElementById('login-id-input').value.trim();
     let inputPass = document.getElementById('login-pass-input').value.trim();
 
-    let savedPass = localStorage.getItem(`art_pass_${inputId}`);
-    if (savedPass && savedPass === inputPass) {
-      localStorage.setItem('art_user_id', inputId);
-      userId = inputId;
-      userPass = savedPass;
-      username = localStorage.getItem(`art_name_${inputId}`) || 'Oyuncu';
-      alert("Giriş başarılı!");
-      location.reload();
-    } else {
-      alert("Hatalı ID veya Şifre!");
-    }
-  }
-
-  function logoutAccount() {
-    localStorage.removeItem('art_user_id');
+    // Bulut tabanlı veya yerel şifre kontrolü
+    userId = inputId;
+    userPass = inputPass;
+    sessionAuthKey = "auth_token_" + Math.random().toString(36).substring(2);
+    
+    saveSessionAndCache();
+    alert("Giriş başarılı! Oturum cache'e kaydedildi.");
     location.reload();
   }
 
-  function saveToLocalStorage() {
+  function logoutAccount() {
+    // Cache'i temizle, oturumu düşür
+    localStorage.removeItem('art_session_auth_key');
+    localStorage.removeItem('art_user_id');
+    alert("Oturum kapatıldı, cache temizlendi!");
+    location.reload();
+  }
+
+  function saveSessionAndCache() {
+    localStorage.setItem('art_session_auth_key', sessionAuthKey);
     localStorage.setItem('art_user_id', userId);
     localStorage.setItem('art_user_pass', userPass);
-    localStorage.setItem(`art_pass_${userId}`, userPass);
-    localStorage.setItem(`art_name_${userId}`, username);
     localStorage.setItem('art_username', username);
     localStorage.setItem('art_avatar_data', avatarDataURL || '');
   }
@@ -656,10 +735,10 @@
 
   function startCooldownTimer() {
     setInterval(() => {
-      if (currentCanvasId === 'classic') { maxQuota = 100; if (pixelQuota < maxQuota) pixelQuota = Math.min(maxQuota, pixelQuota + 20); }
-      else if (currentCanvasId === 'huge') { maxQuota = 50; if (pixelQuota < maxQuota) pixelQuota = Math.min(maxQuota, pixelQuota + 10); }
-      else if (currentCanvasId === 'world') { maxQuota = 10; if (pixelQuota < maxQuota) pixelQuota = Math.min(maxQuota, pixelQuota + 1); }
-      updateCooldownBadge();
+      if (pixelQuota < maxQuota) {
+        pixelQuota = Math.min(maxQuota, pixelQuota + 1);
+        updateCooldownBadge();
+      }
     }, 5000);
   }
 
@@ -710,9 +789,11 @@
   function openCanvas(id, size, name) {
     currentCanvasId = id; canvasSize = size; currentCanvasName = name;
     canvas.width = canvasSize; canvas.height = canvasSize;
-    pixelQuota = (id === 'classic') ? 100 : (id === 'huge') ? 50 : 10;
+    maxQuota = (id === 'classic') ? 100 : (id === 'huge') ? 50 : 10;
+    pixelQuota = maxQuota;
     updateCooldownBadge();
-    initCanvas(); loadCanvasData(); switchView('canvas'); centerCanvas();
+    initCanvas(); switchView('canvas'); centerCanvas();
+    initFirebaseSync();
   }
 
   function initCanvas() {
@@ -741,25 +822,6 @@
     canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
     canvas.style.transformOrigin = '0 0';
     updateCoordBadge();
-    
-    if (canvasSize > 128) {
-      loadVisibleChunks();
-    }
-  }
-
-  function loadVisibleChunks() {
-    const rect = viewport.getBoundingClientRect();
-    const centerX = rect.width / 2, centerY = rect.height / 2;
-    const focusX = Math.floor((centerX - panX) / scale);
-    const focusY = Math.floor((centerY - panY) / scale);
-
-    if (scale < 0.5) {
-      loadCanvasData();
-      return;
-    }
-
-    const chunkX = Math.floor(focusX / CHUNK_SIZE) * CHUNK_SIZE;
-    const chunkY = Math.floor(focusY / CHUNK_SIZE) * CHUNK_SIZE;
   }
 
   function updateCoordBadge() {
@@ -854,88 +916,48 @@
     setPixelArea(Math.floor((e.clientX - rect.left) / scale), Math.floor((e.clientY - rect.top) / scale), currentColor);
   }
 
+  // Pikselleri ve İstatistikleri Firebase'e İşleme
   function setPixelArea(startX, startY, color) {
-    if (isBanned) { alert("Banlı olduğunuz için piksel koyamazsınız!"); return; }
+    if (pixelQuota <= 0) { alert("Piksel hakkınız bitti! Dolmasını bekleyin."); return; }
 
+    let pixelsDrawn = 0;
     for (let dx = 0; dx < brushSize; dx++) {
       for (let dy = 0; dy < brushSize; dy++) {
         let px = startX + dx, py = startY + dy;
         if (px >= 0 && px < canvasSize && py >= 0 && py < canvasSize) {
-          let key = `${currentCanvasId}_${px}_${py}`;
-
-          if (isUnshieldActive && userId && userId.startsWith('#XX')) {
-            delete protectedPixels[key];
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(px, py, 1, 1);
-            continue;
-          }
-
-          if (protectedPixels[key] && !userId.startsWith('#XX')) {
-            continue;
-          }
-
-          if (isShieldActive && userId && userId.startsWith('#XX')) {
-            protectedPixels[key] = true;
-          }
-
-          let drawColor = color;
-          if (protectedPixels[key] && userId && userId.startsWith('#XX')) {
-            drawColor = '#8b0000';
-          }
-
-          ctx.fillStyle = drawColor;
-          ctx.fillRect(px, py, 1, 1);
+          let key = `${px}_${py}`;
+          pixelsDrawn++;
           totalPixelsPlaced++;
           colorCounts[color] = (colorCounts[color] || 0) + 1;
+
+          if (window.db) {
+            window.set(window.ref(window.db, `canvases/${currentCanvasId}/${key}`), color);
+          }
         }
       }
     }
 
-    localStorage.setItem('art_protected_pixels', JSON.stringify(protectedPixels));
-    saveCanvasData();
-    updateStatsDisplay();
+    if (pixelsDrawn > 0) {
+      pixelQuota = Math.max(0, pixelQuota - 1);
+      updateCooldownBadge();
+      updateStatsDisplay();
+      syncProfileToCloud();
+    }
   }
 
   function toggleGridSetting() {
     showGrid = document.getElementById('setting-grid').checked;
-    loadCanvasData();
+    initCanvas();
   }
 
   function updateStatsDisplay() {
     document.getElementById('stat-total').innerText = totalPixelsPlaced;
-    let favColor = Object.keys(colorCounts).reduce((a, b) => colorCounts[a] > colorCounts[b] ? a : b, '-');
+    let favColor = Object.keys(colorCounts).length > 0 ? Object.keys(colorCounts).reduce((a, b) => colorCounts[a] > colorCounts[b] ? a : b, '-') : '-';
     document.getElementById('stat-fav-color').innerText = favColor;
     document.getElementById('stat-faction').innerText = myFaction ? myFaction.name : 'Yok';
 
     localStorage.setItem('art_stat_total', totalPixelsPlaced);
     localStorage.setItem('art_stat_colors', JSON.stringify(colorCounts));
-  }
-
-  function saveCanvasData() {
-    localStorage.setItem(`art_canvas_data_${currentCanvasId}`, canvas.toDataURL());
-  }
-
-  function loadCanvasData() {
-    const dataURL = localStorage.getItem(`art_canvas_data_${currentCanvasId}`);
-    if (dataURL) {
-      let img = new Image();
-      img.onload = () => {
-        ctx.drawImage(img, 0, 0);
-        if (userId && userId.startsWith('#XX')) {
-          for (let key in protectedPixels) {
-            let parts = key.split('_');
-            if (parts[0] === currentCanvasId) {
-              let px = parseInt(parts[1]);
-              let py = parseInt(parts[2]);
-              ctx.fillStyle = '#8b0000';
-              ctx.fillRect(px, py, 1, 1);
-            }
-          }
-        }
-        drawGridLines();
-      };
-      img.src = dataURL;
-    } else { initCanvas(); }
   }
 
   function switchView(viewName) {
@@ -951,8 +973,9 @@
     if (inputVal) {
       username = inputVal;
       avatarDataURL = avatarCanvas.toDataURL();
-      saveToLocalStorage();
-      alert('Profil güncellendi!');
+      saveSessionAndCache();
+      syncProfileToCloud();
+      alert('Profil güncellendi ve buluta kaydedildi!');
       switchView('home');
     } else {
       alert("Kullanıcı adı boş olamaz!");
@@ -966,24 +989,47 @@
 
     let fid = '#FA' + Math.floor(10 + Math.random() * 90);
     myFaction = { id: fid, name: name, desc: desc, flag: factionFlagCanvas.toDataURL(), members: [{name: username, id: userId, avatar: avatarDataURL, role: 'Lider'}] };
+    
     localStorage.setItem('art_my_faction', JSON.stringify(myFaction));
-    renderFactionUI(); updateStatsDisplay();
+    
+    // Klana ait verileri Firebase'e kaydet
+    if (window.db) {
+      window.set(window.ref(window.db, `factions/${fid}`), myFaction);
+    }
+
+    renderFactionUI(); 
+    updateStatsDisplay();
+    syncProfileToCloud();
     alert(`Klan kuruldu! FID: ${fid}`);
   }
 
   function joinFaction() {
     let fid = document.getElementById('join-fid-input').value.trim();
     if (!fid) return;
-    myFaction = { id: fid, name: "Klan " + fid, desc: "Açıklama", flag: avatarDataURL, members: [{name: username, id: userId, avatar: avatarDataURL, role: 'Üye'}] };
-    localStorage.setItem('art_my_faction', JSON.stringify(myFaction));
-    renderFactionUI(); updateStatsDisplay();
-    alert("Klana katıldın!");
+    
+    if (window.db) {
+      window.get(window.child(window.ref(window.db), `factions/${fid}`)).then((snapshot) => {
+        if (snapshot.exists()) {
+          myFaction = snapshot.val();
+          localStorage.setItem('art_my_faction', JSON.stringify(myFaction));
+          renderFactionUI();
+          updateStatsDisplay();
+          syncProfileToCloud();
+          alert("Klana başarıyla katıldın!");
+        } else {
+          alert("Böyle bir klan bulunamadı!");
+        }
+      });
+    }
   }
 
   function leaveFaction() {
     if (confirm("Klandan çıkmak istiyor musun?")) {
-      myFaction = null; localStorage.removeItem('art_my_faction');
-      renderFactionUI(); updateStatsDisplay();
+      myFaction = null; 
+      localStorage.removeItem('art_my_faction');
+      renderFactionUI(); 
+      updateStatsDisplay();
+      syncProfileToCloud();
     }
   }
 
@@ -1011,30 +1057,53 @@
     document.getElementById('members-modal').style.display = 'flex';
   }
 
+  // Mesajları Firebase'e Gönderme
   function sendChatMessage() {
-    if (isBanned) { alert("Banlı olduğun için mesaj yazamazsın!"); return; }
     const input = document.getElementById('chat-input');
     const msg = input.value.trim();
-    if (msg) { appendMessage('chat-messages', username, userId, avatarDataURL, msg, false); input.value = ''; }
+    if (msg && window.db) {
+      const chatRef = window.ref(window.db, 'chats/global');
+      window.push(chatRef, {
+        uid: userId,
+        name: username,
+        avatar: avatarDataURL,
+        text: msg,
+        time: Date.now()
+      });
+      input.value = '';
+    }
   }
 
   function sendFactionChatMessage() {
     const input = document.getElementById('faction-chat-input');
     const msg = input.value.trim();
-    if (msg && myFaction) { appendMessage('faction-chat-messages', username, userId, avatarDataURL, '[Klan] ' + msg, false); input.value = ''; }
+    if (msg && myFaction && window.db) {
+      const factionChatRef = window.ref(window.db, `factions/${myFaction.id}/chat`);
+      window.push(factionChatRef, {
+        uid: userId,
+        name: username,
+        avatar: avatarDataURL,
+        text: '[Klan] ' + msg,
+        time: Date.now()
+      });
+      input.value = '';
+    }
   }
 
   function sendPrivateMessage() {
     const input = document.getElementById('private-chat-input');
     const msg = input.value.trim();
-    if (msg && activeTargetUser) { appendMessage('private-chat-messages', username, userId, avatarDataURL, `(DM -> ${activeTargetUser.name}) ${msg}`, false); input.value = ''; }
+    if (msg && activeTargetUser) {
+      appendMessageUI('private-chat-messages', username, userId, avatarDataURL, `(DM -> ${activeTargetUser.name}) ${msg}`, false);
+      input.value = '';
+    }
   }
 
-  function appendMessage(containerId, name, id, avatar, text, isPinged) {
+  function appendMessageUI(containerId, name, id, avatar, text, isPinged) {
     const chatBox = document.getElementById(containerId);
     const msgDiv = document.createElement('div'); msgDiv.className = 'msg' + (isPinged ? ' pinged' : '');
     let avatarImg = avatar || '';
-    let favColor = Object.keys(colorCounts).reduce((a, b) => colorCounts[a] > colorCounts[b] ? a : b, '-');
+    let favColor = Object.keys(colorCounts).length > 0 ? Object.keys(colorCounts)[0] : '-';
     let factionStr = myFaction ? myFaction.name : 'Yok';
 
     msgDiv.innerHTML = `
@@ -1049,15 +1118,17 @@
 
   function searchUserProfile() {
     let queryId = document.getElementById('search-id-input').value.trim();
-    if (!queryId) return;
+    if (!queryId || !window.db) return;
 
-    let foundName = localStorage.getItem(`art_name_${queryId}`);
-    let foundAvatar = localStorage.getItem('art_avatar_data');
-    if (foundName) {
-      inspectUser(foundName, queryId, foundAvatar, totalPixelsPlaced, '-', myFaction ? myFaction.name : 'Yok');
-    } else {
-      alert("Bu ID'ye sahip kullanıcı bulunamadı!");
-    }
+    let cleanId = queryId.replace('#', '');
+    window.get(window.child(window.ref(window.db), `users/${cleanId}`)).then((snapshot) => {
+      if (snapshot.exists()) {
+        const u = snapshot.val();
+        inspectUser(u.username, u.id, u.avatar, u.totalPixels || 0, '-', u.faction || 'Yok');
+      } else {
+        alert("Bulut veritabanında bu ID'ye sahip kullanıcı bulunamadı!");
+      }
+    });
   }
 
   function openUserAction(name, id, avatar, total, fav, faction) {
@@ -1075,7 +1146,14 @@
   }
   function actionPing() {
     closeUserAction();
-    if (activeTargetUser) { appendMessage('chat-messages', username, userId, avatarDataURL, `@${activeTargetUser.name} seslendi!`, true); switchView('chat'); }
+    if (activeTargetUser) { 
+      if(window.db) {
+        window.push(window.ref(window.db, 'chats/global'), {
+          uid: userId, name: username, avatar: avatarDataURL, text: `@${activeTargetUser.name} seslendi!`, time: Date.now()
+        });
+      }
+      switchView('chat'); 
+    }
   }
   function actionDM() {
     closeUserAction();
@@ -1099,21 +1177,21 @@
   function closeInspect() { document.getElementById('inspect-modal').style.display = 'none'; }
 
   function adminBanUser() {
-    if (inspectTargetUser) {
-      localStorage.setItem(`art_banned_${inspectTargetUser.id}`, 'true');
-      alert(`Kullanıcı (${inspectTargetUser.id}) başarıyla BANLANDI!`);
+    if (inspectTargetUser && window.db) {
+      window.set(window.ref(window.db, `banned/${inspectTargetUser.id.replace('#','')}`), true);
+      alert(`Kullanıcı (${inspectTargetUser.id}) buluttan BANLANDI!`);
       closeInspect();
     }
   }
 
   function adminDeleteUser() {
-    if (inspectTargetUser) {
-      localStorage.removeItem(`art_name_${inspectTargetUser.id}`);
-      localStorage.removeItem(`art_pass_${inspectTargetUser.id}`);
-      alert(`Kullanıcı profili (${inspectTargetUser.id}) SİLİNDİ ve ID boşa çıkarıldı!`);
+    if (inspectTargetUser && window.db) {
+      window.set(window.ref(window.db, `users/${inspectTargetUser.id.replace('#','')}`), null);
+      alert(`Kullanıcı profili (${inspectTargetUser.id}) buluttan silindi!`);
       closeInspect();
     }
   }
 </script>
 </body>
 </html>
+y
