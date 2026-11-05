@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>PixelPlace Pro - r/place Clone</title>
+    <title>ArtCanvas - r/place Clone</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -36,7 +36,7 @@
     <!-- TOP NAVBAR -->
     <header class="bg-cardBg border-b border-slate-800 h-14 px-3 sm:px-4 flex items-center justify-between z-30 shrink-0">
         <div class="flex items-center space-x-2 sm:space-x-3">
-            <h1 class="pixel-font text-[10px] sm:text-xs text-indigo-400 tracking-wider">PIXEL<span class="text-rose-500">PLACE</span></h1>
+            <h1 class="pixel-font text-[10px] sm:text-xs text-indigo-400 tracking-wider">ART<span class="text-rose-500">CANVAS</span></h1>
             <div id="coord-display" class="flex items-center bg-slate-900/80 px-2.5 py-1 rounded text-[11px] font-mono border border-slate-700 text-indigo-300">
                 <i class="fa-solid fa-crosshairs mr-1 text-rose-400 text-[10px]"></i> X: <span id="coord-x">0</span>, Y: <span id="coord-y">0</span>
             </div>
@@ -61,7 +61,7 @@
 
             <!-- Profile Button -->
             <button onclick="openModal('profile-modal')" class="flex items-center space-x-1.5 bg-slate-800 hover:bg-slate-700 py-1.5 px-2.5 rounded-lg border border-slate-700 transition">
-                <div class="w-5 h-5 rounded-full bg-gradient-to-tr from-indigo-500 to-rose-500 flex items-center justify-center text-[10px] font-bold text-white" id="nav-avatar">G</div>
+                <div class="w-5 h-5 rounded-full bg-gradient-to-tr from-indigo-500 to-rose-500 flex items-center justify-center text-[10px] font-bold text-white" id="nav-avatar">M</div>
                 <span class="text-[11px] font-medium hidden md:inline" id="nav-username">Misafir</span>
             </button>
         </div>
@@ -82,7 +82,7 @@
             </div>
         </div>
 
-        <!-- COLOR PALETTE BAR (24 Colors - Fixed at bottom above safe area) -->
+        <!-- COLOR PALETTE BAR (24 Colors) -->
         <div class="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 w-[94vw] max-w-xl bg-slate-900/95 backdrop-blur border border-slate-700 rounded-2xl p-2 shadow-2xl flex flex-col items-center">
             <div class="text-[10px] text-slate-400 mb-1 font-medium flex items-center justify-between w-full px-2">
                 <span>PALET: <strong class="text-white" id="selected-color-name">Siyah</strong></span>
@@ -105,7 +105,7 @@
             </div>
             <!-- Messages List -->
             <div id="chat-messages" class="flex-1 overflow-y-auto p-3 space-y-2.5 font-sans text-xs flex flex-col">
-                <div class="text-center text-slate-500 my-2 text-[11px]">Sohbete hoş geldiniz! Kurallara uyunuz.</div>
+                <div class="text-center text-slate-500 my-2 text-[11px]">ArtCanvas Belçika sunucusuna hoş geldiniz!</div>
             </div>
             <!-- Chat Input -->
             <div class="p-3 border-t border-slate-800 bg-slate-900 shrink-0">
@@ -126,12 +126,12 @@
             
             <div id="logged-out-view">
                 <h2 class="text-base sm:text-lg font-bold text-white mb-1"><i class="fa-solid fa-user-circle text-indigo-500 mr-2"></i>Hesap Yönetimi</h2>
-                <p class="text-xs text-slate-400 mb-5">Piksel yerleştirmek ve sohbet etmek için giriş yapın veya misafir olarak devam edin.</p>
+                <p class="text-xs text-slate-400 mb-5">E-posta ve şifrenizle kayıt olun veya giriş yapın. Verileriniz veritabanında saklanır.</p>
                 
                 <div class="space-y-3.5">
                     <div>
-                        <label class="block text-[11px] font-medium text-slate-300 mb-1">Kullanıcı Adı / E-posta</label>
-                        <input type="text" id="auth-email" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" placeholder="ornek@mail.com">
+                        <label class="block text-[11px] font-medium text-slate-300 mb-1">E-posta Adresi</label>
+                        <input type="email" id="auth-email" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" placeholder="ornek@mail.com">
                     </div>
                     <div>
                         <label class="block text-[11px] font-medium text-slate-300 mb-1">Şifre</label>
@@ -154,10 +154,19 @@
 
             <div id="logged-in-view" class="hidden">
                 <div class="flex items-center space-x-3.5 mb-5">
-                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-500 to-rose-500 flex items-center justify-center text-lg font-bold text-white shadow-lg" id="profile-avatar-large">G</div>
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-500 to-rose-500 flex items-center justify-center text-lg font-bold text-white shadow-lg" id="profile-avatar-large">M</div>
                     <div>
                         <h2 class="text-sm font-bold text-white" id="profile-username-display">Kullanıcı</h2>
-                        <p class="text-[11px] text-indigo-400 font-mono" id="profile-email-display">guest@pixelplace.fun</p>
+                        <p class="text-[11px] text-indigo-400 font-mono" id="profile-email-display">mail@artcanvas.fun</p>
+                    </div>
+                </div>
+
+                <!-- Username Change Section -->
+                <div class="bg-slate-800/40 border border-slate-700/60 p-3.5 rounded-xl mb-4">
+                    <label class="block text-[11px] font-medium text-slate-300 mb-1">Kullanıcı Adını Değiştir</label>
+                    <div class="flex space-x-2">
+                        <input type="text" id="new-username-input" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500" placeholder="Yeni kullanıcı adı">
+                        <button onclick="updateUsername()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 rounded-lg text-xs font-semibold transition">Güncelle</button>
                     </div>
                 </div>
 
@@ -184,7 +193,7 @@
         <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-2xl p-5 sm:p-6 shadow-2xl relative">
             <button onclick="closeModal('faction-modal')" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-base"></i></button>
             <h2 class="text-base sm:text-lg font-bold text-white mb-1"><i class="fa-solid fa-shield-halved text-indigo-500 mr-2"></i>Birlik (Faction) Sistemi</h2>
-            <p class="text-xs text-slate-400 mb-5">Birlik kurun, arkadaşlarınızla aynı bölgeyi boyayın ve özel birlik sohbetini kullanın.</p>
+            <p class="text-xs text-slate-400 mb-5">Birlik veritabanında saklanır. Arkadaşlarınızla aynı birliğe katılıp özel sohbeti kullanın.</p>
 
             <div id="no-faction-section" class="space-y-4">
                 <div class="bg-slate-800/40 border border-slate-700/60 p-3.5 rounded-xl">
@@ -234,7 +243,7 @@
             firebase.initializeApp(firebaseConfig);
             rtdb = firebase.database();
             isFirebaseConnected = true;
-            console.log("Belçika sunuculu Firebase Realtime Database bağlantısı başarılı!");
+            console.log("ArtCanvas Belçika sunuculu Realtime Database bağlantısı başarılı!");
         } catch (e) {
             console.warn("Firebase bağlantı hatası:", e);
         }
@@ -282,25 +291,19 @@
         let unreadChatCount = 0;
         let isChatOpen = false;
         let lastPixelPlacedTime = 0;
-        const cooldownTimeMs = 3000; // 3 saniye
+        const cooldownTimeMs = 3000;
 
         let currentUser = {
-            uid: 'guest_' + Math.floor(Math.random() * 100000),
+            userKey: null,
             username: 'Misafir_' + Math.floor(Math.random() * 1000),
-            email: 'guest@pixelplace.fun',
+            email: 'guest@artcanvas.fun',
             pixelsPlaced: 0,
+            factionId: null,
             faction: null
         };
 
-        let chatMessages = [
-            { id: 1, user: 'Sistem', text: 'PixelPlace Pro (Belçika Sunucusu) aktif! Canlı piksel savaşları başlasın.', lang: 'tr', time: '12:00' },
-            { id: 2, user: 'System', text: 'PixelPlace Pro (Belgium Server) is active! Enjoy placing pixels.', lang: 'en', time: '12:00' }
-        ];
-
-        let factionsList = [
-            { id: 'f1', name: 'Turkiye Clan', tag: '[TR]', members: 12, leader: 'Admin' },
-            { id: 'f2', name: 'Pixel Army', tag: '[PA]', members: 8, leader: 'Master' }
-        ];
+        let chatMessages = [];
+        let factionsList = [];
 
         // ==================== INITIALIZATION ====================
         window.addEventListener('DOMContentLoaded', () => {
@@ -427,7 +430,6 @@
             drawCanvas();
         }
 
-        // Pan and Zoom Event Handlers
         let touchStartDist = 0;
         let isPinching = false;
         let hasMoved = false;
@@ -499,7 +501,6 @@
                 drawCanvas();
             }, { passive: false });
 
-            // Touch events
             canvas.addEventListener('touchstart', (e) => {
                 hasMoved = false;
                 if (e.touches.length === 1) {
@@ -560,7 +561,11 @@
             updateUI();
             drawCanvas();
 
-            // Direct save to Belgium Firebase Realtime Database
+            // Sync pixel stats to database if registered
+            if (currentUser.userKey && rtdb) {
+                rtdb.ref(`users/${currentUser.userKey}/pixelsPlaced`).set(currentUser.pixelsPlaced);
+            }
+
             if (isFirebaseConnected && rtdb) {
                 rtdb.ref(`pixels/${x}_${y}`).set({
                     x: x,
@@ -570,7 +575,6 @@
                     timestamp: Date.now()
                 }).catch(err => {
                     console.error("Piksel Firebase'e yazılamadı:", err);
-                    showToast("Piksel kaydedilemedi!", "rose");
                 });
             }
         }
@@ -608,11 +612,26 @@
                 }
             });
 
-            // Listen for live pixel updates
             rtdb.ref('pixels').on('child_added', snapshot => updatePixelFromDB(snapshot.val()));
             rtdb.ref('pixels').on('child_changed', snapshot => updatePixelFromDB(snapshot.val()));
 
-            // Listen for live chat messages
+            // Load factions from RTDB
+            rtdb.ref('factions').on('value', snapshot => {
+                const val = snapshot.val();
+                factionsList = [];
+                if (val) {
+                    Object.keys(val).forEach(k => {
+                        factionsList.push(val[k]);
+                        if (currentUser.factionId && val[k].id === currentUser.factionId) {
+                            currentUser.faction = val[k];
+                        }
+                    });
+                }
+                renderFactionList();
+                updateUI();
+            });
+
+            // Load chat messages from RTDB
             rtdb.ref('messages').limitToLast(50).on('child_added', snapshot => {
                 const msg = snapshot.val();
                 if (msg && !chatMessages.some(m => m.id === msg.id)) {
@@ -629,6 +648,227 @@
                     pixelData[idx] = p.color;
                     drawCanvas();
                 }
+            }
+        }
+
+        // ==================== AUTH & PROFILE SYSTEM ====================
+        function handleRegister() {
+            const email = document.getElementById('auth-email').value.trim();
+            const pass = document.getElementById('auth-pass').value.trim();
+            if (!email || !pass) {
+                showToast("Lütfen e-posta ve şifre girin!", "rose");
+                return;
+            }
+            const userKey = email.replace(/\./g, '_dot_').replace(/[@]/g, '_at_');
+            rtdb.ref('users/' + userKey).once('value', snapshot => {
+                if (snapshot.exists()) {
+                    showToast("Bu e-posta adresi zaten kayıtlı!", "rose");
+                } else {
+                    const username = email.split('@')[0];
+                    const newUser = {
+                        userKey: userKey,
+                        email: email,
+                        password: pass,
+                        username: username,
+                        pixelsPlaced: 0,
+                        factionId: null
+                    };
+                    rtdb.ref('users/' + userKey).set(newUser).then(() => {
+                        currentUser = newUser;
+                        updateUI();
+                        closeModal('profile-modal');
+                        showToast("Başarıyla kayıt olundu ve giriş yapıldı!", "indigo");
+                    });
+                }
+            });
+        }
+
+        function handleLogin() {
+            const email = document.getElementById('auth-email').value.trim();
+            const pass = document.getElementById('auth-pass').value.trim();
+            if (!email || !pass) {
+                showToast("Lütfen e-posta ve şifre girin!", "rose");
+                return;
+            }
+            const userKey = email.replace(/\./g, '_dot_').replace(/[@]/g, '_at_');
+            rtdb.ref('users/' + userKey).once('value', snapshot => {
+                if (!snapshot.exists()) {
+                    showToast("Bu e-posta ile kayıtlı kullanıcı bulunamadı!", "rose");
+                } else {
+                    const data = snapshot.val();
+                    if (data.password !== pass) {
+                        showToast("Hatalı şifre!", "rose");
+                    } else {
+                        currentUser = data;
+                        currentUser.userKey = userKey;
+                        updateUI();
+                        closeModal('profile-modal');
+                        showToast("Giriş yapıldı!", "indigo");
+                    }
+                }
+            });
+        }
+
+        function handleGuestLogin() {
+            currentUser = {
+                userKey: null,
+                username: 'Misafir_' + Math.floor(Math.random() * 10000),
+                email: 'guest@artcanvas.fun',
+                pixelsPlaced: 0,
+                factionId: null,
+                faction: null
+            };
+            updateUI();
+            closeModal('profile-modal');
+            showToast("Misafir olarak devam ediliyor", "indigo");
+        }
+
+        function handleLogout() {
+            currentUser = {
+                userKey: null,
+                username: 'Misafir_' + Math.floor(Math.random() * 1000),
+                email: 'guest@artcanvas.fun',
+                pixelsPlaced: 0,
+                factionId: null,
+                faction: null
+            };
+            updateUI();
+            closeModal('profile-modal');
+            showToast("Çıkış yapıldı.", "amber");
+        }
+
+        function updateUsername() {
+            const newName = document.getElementById('new-username-input').value.trim();
+            if (!newName) {
+                showToast("Lütfen geçerli bir kullanıcı adı girin!", "rose");
+                return;
+            }
+            currentUser.username = newName;
+            if (currentUser.userKey && rtdb) {
+                rtdb.ref('users/' + currentUser.userKey).update({ username: newName });
+            }
+            updateUI();
+            document.getElementById('new-username-input').value = '';
+            showToast("Kullanıcı adı güncellendi!", "indigo");
+        }
+
+        function updateUI() {
+            document.getElementById('nav-username').innerText = currentUser.username;
+            document.getElementById('nav-avatar').innerText = currentUser.username.charAt(0).toUpperCase();
+            
+            document.getElementById('profile-username-display').innerText = currentUser.username;
+            document.getElementById('profile-email-display').innerText = currentUser.email;
+            document.getElementById('profile-avatar-large').innerText = currentUser.username.charAt(0).toUpperCase();
+            
+            document.getElementById('stat-pixels').innerText = currentUser.pixelsPlaced;
+            document.getElementById('stat-faction').innerText = currentUser.faction ? currentUser.faction.name : 'Yok';
+            document.getElementById('nav-faction-name').innerText = currentUser.faction ? currentUser.faction.tag : 'Birlik Yok';
+
+            if (currentUser.email !== 'guest@artcanvas.fun') {
+                document.getElementById('logged-out-view').classList.add('hidden');
+                document.getElementById('logged-in-view').classList.remove('hidden');
+            } else {
+                document.getElementById('logged-out-view').classList.remove('hidden');
+                document.getElementById('logged-in-view').classList.add('hidden');
+            }
+
+            if (currentUser.faction) {
+                document.getElementById('no-faction-section').classList.add('hidden');
+                document.getElementById('has-faction-section').classList.remove('hidden');
+                document.getElementById('my-faction-tag').innerText = currentUser.faction.tag;
+                document.getElementById('my-faction-name').innerText = currentUser.faction.name;
+                document.getElementById('my-faction-members').innerText = currentUser.faction.members;
+            } else {
+                document.getElementById('no-faction-section').classList.remove('hidden');
+                document.getElementById('has-faction-section').classList.add('hidden');
+            }
+        }
+
+        // ==================== FACTION SYSTEM ====================
+        function createFaction() {
+            const name = document.getElementById('faction-name-input').value.trim();
+            const tag = document.getElementById('faction-tag-input').value.trim();
+
+            if (!name || !tag) {
+                showToast("Lütfen birlik adı ve etiket girin!", "rose");
+                return;
+            }
+
+            const factionId = 'f_' + Date.now();
+            const newFaction = {
+                id: factionId,
+                name: name,
+                tag: tag.startsWith('[') ? tag : `[${tag}]`,
+                members: 1,
+                leader: currentUser.username
+            };
+
+            if (rtdb) {
+                rtdb.ref('factions/' + factionId).set(newFaction);
+                currentUser.factionId = factionId;
+                currentUser.faction = newFaction;
+                if (currentUser.userKey) {
+                    rtdb.ref('users/' + currentUser.userKey).update({ factionId: factionId });
+                }
+            }
+
+            updateUI();
+            closeModal('faction-modal');
+            showToast("Birlik başarıyla kuruldu!", "indigo");
+        }
+
+        function renderFactionList() {
+            const container = document.getElementById('faction-list');
+            container.innerHTML = '';
+
+            if (factionsList.length === 0) {
+                container.innerHTML = `<div class="text-center text-slate-500 text-xs py-2">Henüz birlik yok.</div>`;
+                return;
+            }
+
+            factionsList.forEach(f => {
+                const div = document.createElement('div');
+                div.className = "flex items-center justify-between bg-slate-800/60 border border-slate-700/60 p-3 rounded-xl";
+                div.innerHTML = `
+                    <div>
+                        <span class="text-xs font-bold text-indigo-400 mr-2">${f.tag}</span>
+                        <span class="text-xs font-semibold text-white">${f.name}</span>
+                        <div class="text-[10px] text-slate-400 mt-0.5">Üye: ${f.members} | Lider: ${f.leader}</div>
+                    </div>
+                    <button onclick="joinFaction('${f.id}')" class="bg-indigo-600/20 border border-indigo-500/40 text-indigo-300 hover:bg-indigo-600/30 px-3 py-1.5 rounded-lg text-xs font-semibold transition">Katıl</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function joinFaction(id) {
+            const f = factionsList.find(item => item.id === id);
+            if (f) {
+                currentUser.factionId = f.id;
+                currentUser.faction = f;
+                if (currentUser.userKey && rtdb) {
+                    rtdb.ref('users/' + currentUser.userKey).update({ factionId: f.id });
+                }
+                rtdb.ref('factions/' + f.id + '/members').set(f.members + 1);
+                updateUI();
+                closeModal('faction-modal');
+                showToast(`${f.name} birliğine katıldınız!`, "indigo");
+            }
+        }
+
+        function leaveFaction() {
+            if (currentUser.faction && rtdb) {
+                const fId = currentUser.faction.id;
+                const newCount = Math.max(1, currentUser.faction.members - 1);
+                rtdb.ref('factions/' + fId + '/members').set(newCount);
+
+                currentUser.factionId = null;
+                currentUser.faction = null;
+                if (currentUser.userKey) {
+                    rtdb.ref('users/' + currentUser.userKey).update({ factionId: null });
+                }
+                updateUI();
+                showToast("Birlikten ayrıldınız.", "amber");
             }
         }
 
@@ -669,7 +909,7 @@
                 user: currentUser.username,
                 text: text,
                 lang: currentChatTab === 'faction' ? 'faction' : currentChatTab,
-                factionId: currentUser.faction ? currentUser.faction.id : null,
+                factionId: currentUser.factionId,
                 time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                 timestamp: Date.now()
             };
@@ -677,7 +917,6 @@
             if (isFirebaseConnected && rtdb) {
                 rtdb.ref('messages').push(msg).catch(err => {
                     console.error("Mesaj gönderilemedi:", err);
-                    showToast("Mesaj gönderilemedi!", "rose");
                 });
             } else {
                 chatMessages.push(msg);
@@ -692,7 +931,7 @@
             container.innerHTML = '';
 
             const filtered = chatMessages.filter(m => {
-                if (currentChatTab === 'faction') return m.lang === 'faction' && m.factionId === (currentUser.faction ? currentUser.faction.id : null);
+                if (currentChatTab === 'faction') return m.lang === 'faction' && m.factionId === currentUser.factionId;
                 return m.lang === currentChatTab;
             });
 
@@ -729,7 +968,6 @@
             return text.replace(/[&<>"']/g, m => map[m]);
         }
 
-        // ==================== AUTH & PROFILE ====================
         function openModal(id) {
             document.getElementById(id).classList.remove('hidden');
             if (id === 'faction-modal') renderFactionList();
@@ -737,140 +975,6 @@
 
         function closeModal(id) {
             document.getElementById(id).classList.add('hidden');
-        }
-
-        function handleGuestLogin() {
-            currentUser.username = 'Misafir_' + Math.floor(Math.random() * 10000);
-            currentUser.email = 'guest@pixelplace.fun';
-            updateUI();
-            closeModal('profile-modal');
-            showToast("Misafir olarak giriş yapıldı!", "indigo");
-        }
-
-        function handleLogin() {
-            const email = document.getElementById('auth-email').value;
-            if (!email) {
-                showToast("Lütfen geçerli bir e-posta girin!", "rose");
-                return;
-            }
-            currentUser.username = email.split('@')[0];
-            currentUser.email = email;
-            updateUI();
-            closeModal('profile-modal');
-            showToast("Başarıyla giriş yapıldı!", "indigo");
-        }
-
-        function handleRegister() {
-            handleLogin();
-        }
-
-        function handleLogout() {
-            currentUser = {
-                uid: 'guest_' + Math.floor(Math.random() * 100000),
-                username: 'Misafir_' + Math.floor(Math.random() * 1000),
-                email: 'guest@pixelplace.fun',
-                pixelsPlaced: 0,
-                faction: null
-            };
-            updateUI();
-            closeModal('profile-modal');
-            showToast("Çıkış yapıldı.", "amber");
-        }
-
-        function updateUI() {
-            document.getElementById('nav-username').innerText = currentUser.username;
-            document.getElementById('nav-avatar').innerText = currentUser.username.charAt(0).toUpperCase();
-            
-            document.getElementById('profile-username-display').innerText = currentUser.username;
-            document.getElementById('profile-email-display').innerText = currentUser.email;
-            document.getElementById('profile-avatar-large').innerText = currentUser.username.charAt(0).toUpperCase();
-            
-            document.getElementById('stat-pixels').innerText = currentUser.pixelsPlaced;
-            document.getElementById('stat-faction').innerText = currentUser.faction ? currentUser.faction.name : 'Yok';
-            document.getElementById('nav-faction-name').innerText = currentUser.faction ? currentUser.faction.tag : 'Birlik Yok';
-
-            if (currentUser.email !== 'guest@pixelplace.fun') {
-                document.getElementById('logged-out-view').classList.add('hidden');
-                document.getElementById('logged-in-view').classList.remove('hidden');
-            } else {
-                document.getElementById('logged-out-view').classList.remove('hidden');
-                document.getElementById('logged-in-view').classList.add('hidden');
-            }
-
-            if (currentUser.faction) {
-                document.getElementById('no-faction-section').classList.add('hidden');
-                document.getElementById('has-faction-section').classList.remove('hidden');
-                document.getElementById('my-faction-tag').innerText = currentUser.faction.tag;
-                document.getElementById('my-faction-name').innerText = currentUser.faction.name;
-                document.getElementById('my-faction-members').innerText = currentUser.faction.members;
-            } else {
-                document.getElementById('no-faction-section').classList.remove('hidden');
-                document.getElementById('has-faction-section').classList.add('hidden');
-            }
-        }
-
-        // ==================== FACTION SYSTEM ====================
-        function createFaction() {
-            const name = document.getElementById('faction-name-input').value.trim();
-            const tag = document.getElementById('faction-tag-input').value.trim();
-
-            if (!name || !tag) {
-                showToast("Lütfen birlik adı ve etiketi girin!", "rose");
-                return;
-            }
-
-            const newFaction = {
-                id: 'f_' + Date.now(),
-                name: name,
-                tag: tag.startsWith('[') ? tag : `[${tag}]`,
-                members: 1,
-                leader: currentUser.username
-            };
-
-            currentUser.faction = newFaction;
-            factionsList.push(newFaction);
-            updateUI();
-            closeModal('faction-modal');
-            showToast("Birlik başarıyla kuruldu!", "indigo");
-        }
-
-        function renderFactionList() {
-            const container = document.getElementById('faction-list');
-            container.innerHTML = '';
-
-            factionsList.forEach(f => {
-                const div = document.createElement('div');
-                div.className = "flex items-center justify-between bg-slate-800/60 border border-slate-700/60 p-3 rounded-xl";
-                div.innerHTML = `
-                    <div>
-                        <span class="text-xs font-bold text-indigo-400 mr-2">${f.tag}</span>
-                        <span class="text-xs font-semibold text-white">${f.name}</span>
-                        <div class="text-[10px] text-slate-400 mt-0.5">Üye: ${f.members} | Lider: ${f.leader}</div>
-                    </div>
-                    <button onclick="joinFaction('${f.id}')" class="bg-indigo-600/20 border border-indigo-500/40 text-indigo-300 hover:bg-indigo-600/30 px-3 py-1.5 rounded-lg text-xs font-semibold transition">Katıl</button>
-                `;
-                container.appendChild(div);
-            });
-        }
-
-        function joinFaction(id) {
-            const f = factionsList.find(item => item.id === id);
-            if (f) {
-                currentUser.faction = f;
-                f.members++;
-                updateUI();
-                closeModal('faction-modal');
-                showToast(`${f.name} birliğine katıldınız!`, "indigo");
-            }
-        }
-
-        function leaveFaction() {
-            if (currentUser.faction) {
-                currentUser.faction.members--;
-                currentUser.faction = null;
-                updateUI();
-                showToast("Birlikten ayrıldınız.", "amber");
-            }
         }
 
         // ==================== TOAST NOTIFICATION ====================
