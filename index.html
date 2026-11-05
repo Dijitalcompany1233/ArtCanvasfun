@@ -1,1006 +1,912 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="tr" class="dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Art Canvas - MMORPG Pixel</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      user-select: none;
-      -webkit-user-select: none;
-      touch-action: none;
-    }
-    body, html {
-      width: 100%; height: 100%; height: 100dvh; overflow: hidden;
-      background-color: #1a1a1a;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      color: #fff;
-    }
-    
-    #app-container {
-      display: flex; width: 100vw; height: 100%; height: 100dvh; position: relative; flex-direction: row;
-    }
-
-    /* Sol Menü */
-    #sidebar {
-      width: 70px; height: 100%; background-color: #b5651d;
-      border-right: 4px solid #5c330a; display: flex; flex-direction: column;
-      align-items: center; padding: 10px 0; gap: 10px; z-index: 100; flex-shrink: 0; overflow-y: auto;
-    }
-    #sidebar::-webkit-scrollbar { display: none; }
-
-    .side-btn {
-      width: 50px; height: 50px; background-color: #d9822b;
-      border: 3px solid #3d2105; border-radius: 12px; display: flex;
-      justify-content: center; align-items: center; cursor: pointer;
-      box-shadow: inset -2px -2px 0px rgba(0,0,0,0.3); flex-shrink: 0; font-size: 20px;
-    }
-    .side-btn:active, .side-btn.active { background-color: #fca038; transform: scale(0.95); }
-
-    #main-content {
-      flex: 1; height: 100%; position: relative; background-color: #2b2b2b; overflow: hidden;
-    }
-
-    .view-page {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none;
-    }
-    .view-page.active { display: flex; }
-
-    /* Home / Kanvas Seçim */
-    #home-view {
-      flex-direction: column; align-items: center; padding: 30px 15px; overflow-y: auto; gap: 20px;
-    }
-    #home-view h2 { font-size: 22px; color: #f3a64a; text-shadow: 1px 1px 2px #000; }
-    .canvas-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; width: 100%; max-width: 800px; }
-    .canvas-card {
-      background: #333; border: 3px solid #b5651d; border-radius: 14px; width: 220px; padding: 15px;
-      display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; transition: transform 0.2s;
-    }
-    .canvas-card:active { transform: translateY(-4px); }
-    .card-icon { width: 70px; height: 70px; background: #222; border: 2px solid #5c330a; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 32px; }
-    .card-title { font-weight: bold; font-size: 16px; color: #fff; }
-    .card-desc { font-size: 12px; color: #aaa; text-align: center; }
-
-    /* Kanvas Sayfası */
-    #canvas-view { flex-direction: column; width: 100%; height: 100%; }
-    #viewport { flex: 1; width: 100%; position: relative; overflow: hidden; background-color: #333333; }
-    canvas.main-canvas { position: absolute; top: 0; left: 0; image-rendering: pixelated; background-color: #ffffff; box-shadow: 0 0 20px rgba(0,0,0,0.6); }
-
-    #crosshair {
-      position: absolute; top: 50%; left: 50%; width: 16px; height: 16px; transform: translate(-50%, -50%); pointer-events: none; z-index: 50;
-    }
-    #crosshair::before, #crosshair::after { content: ''; position: absolute; background-color: rgba(255, 0, 0, 0.9); }
-    #crosshair::before { top: 7px; left: 0; width: 16px; height: 2px; }
-    #crosshair::after { top: 0; left: 7px; width: 2px; height: 16px; }
-
-    #coord-badge {
-      position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
-      background: rgba(0, 0, 0, 0.85); border: 2px solid #b5651d; padding: 5px 14px;
-      border-radius: 20px; font-size: 13px; font-weight: bold; pointer-events: none; z-index: 50;
-    }
-    #cooldown-badge {
-      position: absolute; top: 55px; left: 50%; transform: translateX(-50%);
-      background: rgba(181, 101, 29, 0.9); border: 1px solid #000; padding: 3px 10px;
-      border-radius: 12px; font-size: 11px; font-weight: bold; pointer-events: none; z-index: 50;
-    }
-
-    /* Alt Palet */
-    #bottom-palette {
-      background-color: #f3a64a; border-top: 4px solid #5c330a; display: flex; flex-direction: column; padding: 6px; gap: 6px; z-index: 60; flex-shrink: 0;
-    }
-    #brush-bar {
-      display: flex; justify-content: center; align-items: center; gap: 10px; background: rgba(0,0,0,0.15); padding: 4px; border-radius: 8px;
-    }
-    .size-btn {
-      background: #d9822b; border: 2px solid #3d2105; padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 12px; color: #000; cursor: pointer;
-    }
-    .size-btn.active { background: #000; color: #fff; border-color: #fff; }
-
-    .palette-row { display: flex; gap: 8px; overflow-x: auto; padding: 2px; justify-content: flex-start; }
-    .palette-row::-webkit-scrollbar { display: none; }
-    
-    .color-box {
-      min-width: 36px; height: 36px; border-radius: 8px; border: 2px solid #000; box-shadow: inset -2px -2px 0px rgba(0,0,0,0.3); flex-shrink: 0; cursor: pointer;
-    }
-    .color-box.selected { border: 3px solid #fff; transform: scale(1.1); }
-    .tool-box {
-      min-width: 36px; height: 36px; background: #fff; border: 2px solid #000; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #000; flex-shrink: 0; cursor: pointer;
-    }
-    .tool-box.active { background: #333; color: #fff; border-color: #fff; }
-
-    /* Sohbet Alanları */
-    .chat-container { display: flex; flex-direction: column; height: 100%; background-color: #222; }
-    .chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-    .msg {
-      background: #333; padding: 10px 14px; border-radius: 10px; max-width: 85%;
-      word-break: break-word; display: flex; gap: 12px; align-items: flex-start; border: 1px solid #444;
-    }
-    .msg-avatar { width: 36px; height: 36px; border-radius: 6px; border: 2px solid #b5651d; image-rendering: pixelated; background: #fff; flex-shrink: 0; }
-    .msg-body { display: flex; flex-direction: column; }
-    .msg .sender { font-size: 12px; color: #f3a64a; margin-bottom: 3px; font-weight: bold; }
-    .msg .tag { color: #888; font-size: 11px; margin-left: 4px; }
-    .chat-input-area { height: 65px; background-color: #111; display: flex; padding: 10px; gap: 10px; }
-    .chat-input { flex: 1; border-radius: 8px; border: 1px solid #444; padding: 0 12px; background: #222; color: #fff; outline: none; font-size: 15px; }
-    .chat-send { background: #b5651d; border: none; padding: 0 18px; border-radius: 8px; color: #fff; font-weight: bold; cursor: pointer; }
-
-    /* Profil & Giriş Sayfası */
-    #profile-view, #login-view {
-      flex-direction: column; align-items: center; justify-content: center; padding: 20px 15px; overflow-y: auto; gap: 15px;
-    }
-    .profile-card {
-      background: #333; padding: 20px; border-radius: 14px; border: 3px solid #b5651d;
-      width: 100%; max-width: 340px; display: flex; flex-direction: column; align-items: center; gap: 12px;
-    }
-    .profile-card h3 { color: #f3a64a; font-size: 20px; }
-    .user-id-badge { background: #222; border: 1px solid #555; padding: 4px 12px; border-radius: 12px; font-size: 13px; color: #fca038; font-weight: bold; }
-    
-    .avatar-editor-container {
-      display: flex; flex-direction: column; align-items: center; gap: 8px; background: #222; padding: 10px; border-radius: 10px; border: 2px solid #5c330a; width: 100%;
-    }
-    .sub-canvas { width: 120px; height: 120px; image-rendering: pixelated; background: #ffffff; border: 3px solid #b5651d; border-radius: 8px; cursor: crosshair; }
-    .mini-colors { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; max-width: 260px; }
-    .mini-color-box { width: 22px; height: 22px; border-radius: 4px; border: 1px solid #000; cursor: pointer; }
-    .mini-color-box.selected { border: 2px solid #fff; transform: scale(1.15); }
-    
-    .stats-box { width: 100%; background: #222; border: 1px solid #444; padding: 10px; border-radius: 8px; font-size: 12px; color: #ccc; display: flex; flex-direction: column; gap: 4px; }
-    
-    .input-group { display: flex; flex-direction: column; gap: 4px; width: 100%; }
-    .input-group label { font-size: 12px; color: #aaa; }
-
-    .profile-card input { padding: 10px; border-radius: 6px; border: 1px solid #555; background: #222; color: #fff; font-size: 15px; outline: none; width: 100%; }
-    .profile-card button { width: 100%; padding: 10px; background: #b5651d; border: none; color: #fff; border-radius: 8px; font-weight: bold; font-size: 15px; cursor: pointer; }
-
-    /* Faction & Search Sayfaları */
-    #faction-view, #search-view { flex-direction: column; align-items: center; padding: 20px; overflow-y: auto; gap: 15px; }
-    .faction-box { background: #333; border: 3px solid #b5651d; border-radius: 14px; width: 100%; max-width: 400px; padding: 20px; display: flex; flex-direction: column; gap: 15px; align-items: center; }
-    .member-item { display: flex; align-items: center; justify-content: space-between; background: #222; padding: 8px 12px; border-radius: 8px; border: 1px solid #444; width: 100%; }
-
-    /* Ayarlar */
-    #settings-view { flex-direction: column; align-items: center; padding: 20px; gap: 15px; overflow-y: auto; }
-    .setting-card { background: #333; border: 2px solid #b5651d; padding: 15px 20px; border-radius: 10px; width: 100%; max-width: 350px; display: flex; justify-content: space-between; align-items: center; }
-
-    /* Modallar */
-    #inspect-modal {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 1000;
-    }
-    .inspect-content { background: #333; border: 3px solid #b5651d; padding: 20px; border-radius: 14px; width: 300px; display: flex; flex-direction: column; align-items: center; gap: 12px; position: relative; }
-    .close-modal { position: absolute; top: 10px; right: 12px; background: none; border: none; color: #fff; font-size: 18px; cursor: pointer; }
-
-    @media (max-width: 600px) and (orientation: portrait) {
-      #app-container { flex-direction: column-reverse; }
-      #sidebar { 
-        width: 100%; height: 60px; flex-direction: row; justify-content: space-around; 
-        padding: 0 5px; border-right: none; border-top: 4px solid #5c330a; overflow-x: auto;
-        padding-bottom: env(safe-area-inset-bottom);
-      }
-      .side-btn { width: 42px; height: 42px; font-size: 16px; }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PixelPlace Pro - r/place Clone (Belgium Server)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#0f172a',
+                        cardBg: '#1e293b'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; touch-action: none; }
+        .pixel-font { font-family: 'Press Start 2P', monospace; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+    </style>
 </head>
-<body>
+<body class="bg-darkBg text-slate-100 h-screen w-screen overflow-hidden flex flex-col select-none">
 
-<div id="app-container">
-  <!-- Sol Menü -->
-  <div id="sidebar">
-    <div class="side-btn active" onclick="switchView('home')" id="btn-home" title="Kanvaslar">🏠</div>
-    <div class="side-btn" onclick="switchView('profile')" id="btn-profile" title="Profil">👤</div>
-    <div class="side-btn" onclick="switchView('chat')" id="btn-chat" title="Global Sohbet">💬</div>
-    <div class="side-btn" onclick="switchView('faction')" id="btn-faction" title="Klan (Faction)">🛡️</div>
-    <div class="side-btn" onclick="switchView('private')" id="btn-private" title="Özel Mesajlar (DM)">✉️</div>
-    <div class="side-btn" onclick="switchView('search')" id="btn-search" title="Kullanıcı Arama">🔍</div>
-    <div class="side-btn" onclick="switchView('settings')" id="btn-settings" title="Ayarlar">⚙️</div>
-  </div>
-
-  <div id="main-content">
-    
-    <!-- 1. HOME -->
-    <div id="home-view" class="view-page active">
-      <h2>Mevcut Kanvaslar</h2>
-      <div class="canvas-grid">
-        <div class="canvas-card" onclick="openCanvas('classic', 128, 'Klasik Tuval')">
-          <div class="card-icon">🎨</div>
-          <div class="card-title">Klasik Tuval</div>
-          <div class="card-desc">128x128 | Her 50sn'de 100 Piksel</div>
-        </div>
-        <div class="canvas-card" onclick="openCanvas('huge', 1024, 'Devasa Tuval')">
-          <div class="card-icon">🌌</div>
-          <div class="card-title">Devasa Tuval</div>
-          <div class="card-desc">1024x1024 | Her 5sn'de 10 Piksel</div>
-        </div>
-        <div class="canvas-card" onclick="openCanvas('world', 1024, 'Dünya Haritası')">
-          <div class="card-icon">🌍</div>
-          <div class="card-title">Dünya Haritası</div>
-          <div class="card-desc">1024x1024 | Her 5sn'de 1 Piksel</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 2. KANVAS -->
-    <div id="canvas-view" class="view-page">
-      <div id="viewport">
-        <div id="crosshair"></div>
-        <div id="coord-badge">Klasik Tuval | X: 0, Y: 0</div>
-        <div id="cooldown-badge">Kalan Hak: 100</div>
-        <canvas id="pixelCanvas" class="main-canvas"></canvas>
-      </div>
-      
-      <div id="bottom-palette">
-        <div id="brush-bar">
-          <span style="font-size:12px; color:#3d2105; font-weight:bold;">Fırça:</span>
-          <button class="size-btn active" id="btn-size-1" onclick="setBrushSize(1)">1x1</button>
-          <button class="size-btn" id="btn-size-3" onclick="setBrushSize(3)">3x3</button>
-          <button class="size-btn" id="btn-size-5" onclick="setBrushSize(5)">5x5</button>
-          <button class="size-btn" id="btn-size-10" onclick="setBrushSize(10)">10x10</button>
-        </div>
-        <div class="palette-row">
-          <div class="color-box selected" style="background:#000000" data-color="#000000"></div>
-          <div class="color-box" style="background:#555555" data-color="#555555"></div>
-          <div class="color-box" style="background:#aaaaaa" data-color="#aaaaaa"></div>
-          <div class="color-box" style="background:#ffffff" data-color="#ffffff"></div>
-          <div class="color-box" style="background:#e74c3c" data-color="#e74c3c"></div>
-          <div class="color-box" style="background:#e67e22" data-color="#e67e22"></div>
-          <div class="color-box" style="background:#f1c40f" data-color="#f1c40f"></div>
-          <div class="tool-box active" id="tool-pencil" onclick="toggleDrawMode(true)">✏️</div>
-        </div>
-        <div class="palette-row">
-          <div class="color-box" style="background:#2ecc71" data-color="#2ecc71"></div>
-          <div class="color-box" style="background:#27ae60" data-color="#27ae60"></div>
-          <div class="color-box" style="background:#1abc9c" data-color="#1abc9c"></div>
-          <div class="color-box" style="background:#3498db" data-color="#3498db"></div>
-          <div class="color-box" style="background:#2980b9" data-color="#2980b9"></div>
-          <div class="color-box" style="background:#8e44ad" data-color="#8e44ad"></div>
-          <div class="color-box" style="background:#fd79a8" data-color="#fd79a8"></div>
-          <div class="tool-box" id="tool-drag" onclick="toggleDrawMode(false)">🖐️</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 3. PROFİL -->
-    <div id="profile-view" class="view-page">
-      <div class="profile-card">
-        <h3>Profil Kartı</h3>
-        <div style="display:flex; gap:8px; align-items:center;">
-          <div class="user-id-badge" id="user-id-display">ID: #0001</div>
-        </div>
-        
-        <div class="avatar-editor-container">
-          <label>Profil Resmi (15x15):</label>
-          <canvas id="avatarCanvas" class="sub-canvas" width="15" height="15"></canvas>
-          
-          <div class="mini-colors" id="avatar-palette">
-            <div class="mini-color-box selected" style="background:#000000" data-color="#000000"></div>
-            <div class="mini-color-box" style="background:#ffffff" data-color="#ffffff"></div>
-            <div class="mini-color-box" style="background:#7f8c8d" data-color="#7f8c8d"></div>
-            <div class="mini-color-box" style="background:#e74c3c" data-color="#e74c3c"></div>
-            <div class="mini-color-box" style="background:#e67e22" data-color="#e67e22"></div>
-            <div class="mini-color-box" style="background:#f1c40f" data-color="#f1c40f"></div>
-            <div class="mini-color-box" style="background:#2ecc71" data-color="#2ecc71"></div>
-            <div class="mini-color-box" style="background:#27ae60" data-color="#27ae60"></div>
-            <div class="mini-color-box" style="background:#3498db" data-color="#3498db"></div>
-            <div class="mini-color-box" style="background:#2980b9" data-color="#2980b9"></div>
-            <div class="mini-color-box" style="background:#8e44ad" data-color="#8e44ad"></div>
-            <div class="mini-color-box" style="background:#fd79a8" data-color="#fd79a8"></div>
-          </div>
-        </div>
-
-        <div class="stats-box">
-          <div>Toplam Konulan Piksel: <b id="stat-total">0</b></div>
-          <div>En Çok Kullanılan Renk: <span id="stat-fav-color">-</span></div>
-          <div>Klan (Faction): <span id="stat-faction" style="color:#f3a64a;">Yok</span></div>
-        </div>
-
-        <div class="input-group">
-          <label>Kullanıcı Adı:</label>
-          <input type="text" id="username-input" value="Yıldırım">
-        </div>
-
-        <button onclick="saveProfile()">Profili Kaydet</button>
-        <button style="background:#444; font-size:12px; padding:6px;" onclick="logoutAccount()">Oturumu Kapat</button>
-      </div>
-    </div>
-
-    <!-- GİRİŞ YAP EKRANI -->
-    <div id="login-view" class="view-page">
-      <div class="profile-card">
-        <h3>Hesap Girişi</h3>
-        <p style="font-size:12px; color:#aaa; text-align:center;">ID ve şifrenle giriş yapabilir veya yeni hesap oluşturabilirsin.</p>
-        <div class="input-group">
-          <label>Kullanıcı ID (Örn: #0001):</label>
-          <input type="text" id="login-id-input" placeholder="#0001">
-        </div>
-        <div class="input-group">
-          <label>Şifre:</label>
-          <input type="password" id="login-pass-input" placeholder="Şifreniz">
-        </div>
-        <button onclick="loginAccount()">Giriş Yap</button>
-        <button style="background:#3498db;" onclick="createNewAccount()">Yeni Hesap Oluştur</button>
-      </div>
-    </div>
-
-    <!-- 4. GLOBAL CHAT -->
-    <div id="chat-view" class="view-page">
-      <div class="chat-container">
-        <div id="chat-messages" class="chat-messages"></div>
-        <div class="chat-input-area">
-          <input type="text" id="chat-input" class="chat-input" placeholder="Genel sohbet mesajı...">
-          <button class="chat-send" onclick="sendChatMessage()">Gönder</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 5. FACTION (KLAN) -->
-    <div id="faction-view" class="view-page">
-      <div id="faction-not-joined" class="faction-box">
-        <h3 style="color:#f3a64a;">Klan (Faction) Merkezi</h3>
-        <p style="font-size:13px; color:#ccc; text-align:center;">Bir klana katıl veya kendi imparatorluğunu kur!</p>
-        <div class="input-group">
-          <label>Klan ID (FID ile Katıl):</label>
-          <input type="text" id="join-fid-input" placeholder="#FA01">
-        </div>
-        <button onclick="joinFaction()">Klana Katıl</button>
-        <hr style="width:100%; border-color:#444;">
-        <h4 style="color:#f3a64a;">Yeni Klan Kur</h4>
-        <div class="input-group">
-          <label>Klan Adı:</label>
-          <input type="text" id="new-faction-name" placeholder="İmparatorluk">
-        </div>
-        <div class="input-group">
-          <label>Klan Açıklaması:</label>
-          <input type="text" id="new-faction-desc" placeholder="Burası bizim bölgemiz!">
-        </div>
-        <div class="avatar-editor-container">
-          <label>Klan Bayrağı (15x15):</label>
-          <canvas id="factionFlagCanvas" class="sub-canvas" width="15" height="15"></canvas>
-          
-          <div class="mini-colors" id="faction-palette">
-            <div class="mini-color-box selected" style="background:#000000" data-color="#000000"></div>
-            <div class="mini-color-box" style="background:#ffffff" data-color="#ffffff"></div>
-            <div class="mini-color-box" style="background:#7f8c8d" data-color="#7f8c8d"></div>
-            <div class="mini-color-box" style="background:#e74c3c" data-color="#e74c3c"></div>
-            <div class="mini-color-box" style="background:#e67e22" data-color="#e67e22"></div>
-            <div class="mini-color-box" style="background:#f1c40f" data-color="#f1c40f"></div>
-            <div class="mini-color-box" style="background:#2ecc71" data-color="#2ecc71"></div>
-            <div class="mini-color-box" style="background:#27ae60" data-color="#27ae60"></div>
-            <div class="mini-color-box" style="background:#3498db" data-color="#3498db"></div>
-            <div class="mini-color-box" style="background:#2980b9" data-color="#2980b9"></div>
-            <div class="mini-color-box" style="background:#8e44ad" data-color="#8e44ad"></div>
-            <div class="mini-color-box" style="background:#fd79a8" data-color="#fd79a8"></div>
-          </div>
-        </div>
-        <button onclick="createFaction()">Klanı Oluştur</button>
-      </div>
-
-      <div id="faction-joined" class="faction-box" style="display:none; max-width: 600px; height: 90%;">
-        <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-          <div style="display:flex; gap:10px; align-items:center;">
-            <img id="my-faction-flag" style="width:40px; height:40px; image-rendering:pixelated; border:2px solid #b5651d; border-radius:6px;" src="">
-            <div>
-              <h3 id="my-faction-name" style="color:#f3a64a;">Klan Adı</h3>
-              <span id="my-faction-id" style="font-size:11px; color:#888;">#FA01</span>
+    <!-- TOP NAVBAR -->
+    <header class="bg-cardBg border-b border-slate-800 h-14 px-4 flex items-center justify-between z-30 shrink-0">
+        <div class="flex items-center space-x-3">
+            <h1 class="pixel-font text-xs sm:text-sm text-indigo-400 tracking-wider">PIXEL<span class="text-rose-500">PLACE</span></h1>
+            <div id="coord-display" class="hidden sm:flex items-center bg-slate-900/80 px-3 py-1 rounded text-xs font-mono border border-slate-700 text-indigo-300">
+                <i class="fa-solid fa-crosshairs mr-1.5 text-rose-400"></i> X: <span id="coord-x">0</span>, Y: <span id="coord-y">0</span>
             </div>
-          </div>
-          <button style="width:auto; padding:6px 12px; background:#e74c3c;" onclick="leaveFaction()">Klandan Ayrıl</button>
         </div>
-        <div class="chat-container" style="flex:1; width:100%; border:2px solid #5c330a; border-radius:8px; margin-top:10px;">
-          <div style="background:#111; padding:6px; font-size:12px; color:#f3a64a; text-align:center; font-weight:bold;">Klan İçi Sohbet</div>
-          <div id="faction-chat-messages" class="chat-messages" style="background:#1c1c1c;"></div>
-          <div class="chat-input-area" style="height:50px;">
-            <input type="text" id="faction-chat-input" class="chat-input" placeholder="Klan mesajı...">
-            <button class="chat-send" onclick="sendFactionChatMessage()">Gönder</button>
-          </div>
+
+        <div class="flex items-center space-x-2 sm:space-x-4">
+            <!-- Cooldown Timer -->
+            <div id="cooldown-badge" class="hidden items-center bg-amber-500/10 border border-amber-500/30 text-amber-400 px-3 py-1 rounded-full text-xs font-medium">
+                <i class="fa-solid fa-stopwatch mr-1.5 animate-pulse"></i> <span id="cooldown-text">Hazır</span>
+            </div>
+
+            <!-- Faction Badge -->
+            <button onclick="openModal('faction-modal')" class="hidden sm:flex items-center bg-indigo-600/20 border border-indigo-500/40 text-indigo-300 px-3 py-1 rounded-lg text-xs font-medium hover:bg-indigo-600/30 transition">
+                <i class="fa-solid fa-shield-halved mr-1.5 text-indigo-400"></i> <span id="nav-faction-name">Birlik Yok</span>
+            </button>
+
+            <!-- Chat Toggle -->
+            <button onclick="toggleChat()" class="relative bg-slate-800 hover:bg-slate-700 p-2 rounded-lg text-slate-300 transition">
+                <i class="fa-solid fa-comments text-base"></i>
+                <span id="chat-badge" class="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center hidden">0</span>
+            </button>
+
+            <!-- Profile Button -->
+            <button onclick="openModal('profile-modal')" class="flex items-center space-x-2 bg-slate-800 hover:bg-slate-700 py-1.5 px-3 rounded-lg border border-slate-700 transition">
+                <div class="w-6 h-6 rounded-full bg-gradient-to-tr from-indigo-500 to-rose-500 flex items-center justify-center text-xs font-bold text-white" id="nav-avatar">G</div>
+                <span class="text-xs font-medium hidden md:inline" id="nav-username">Misafir</span>
+            </button>
         </div>
-      </div>
+    </header>
+
+    <!-- MAIN WORKSPACE -->
+    <main class="relative flex-1 overflow-hidden bg-[#090d16]" id="canvas-container">
+        <!-- Canvas Element -->
+        <canvas id="pixel-canvas" class="absolute cursor-grab active:cursor-grabbing"></canvas>
+
+        <!-- Floating Zoom & Controls Toolbar -->
+        <div class="absolute bottom-4 left-4 z-20 flex flex-col space-y-2">
+            <div class="bg-slate-900/90 backdrop-blur border border-slate-700 rounded-xl p-1.5 shadow-2xl flex flex-col space-y-1">
+                <button onclick="zoomIn()" title="Yakınlaştır" class="w-9 h-9 rounded-lg hover:bg-slate-800 flex items-center justify-center text-slate-300 transition"><i class="fa-solid fa-plus"></i></button>
+                <button onclick="zoomOut()" title="Uzaklaştır" class="w-9 h-9 rounded-lg hover:bg-slate-800 flex items-center justify-center text-slate-300 transition"><i class="fa-solid fa-minus"></i></button>
+                <button onclick="resetView()" title="Merkezle" class="w-9 h-9 rounded-lg hover:bg-slate-800 flex items-center justify-center text-slate-300 transition"><i class="fa-solid fa-expand"></i></button>
+                <button onclick="toggleGrid()" title="Izgara Gizle/Göster" id="grid-toggle-btn" class="w-9 h-9 rounded-lg hover:bg-slate-800 flex items-center justify-center text-indigo-400 transition"><i class="fa-solid fa-border-all"></i></button>
+            </div>
+        </div>
+
+        <!-- COLOR PALETTE BAR (24 Colors) -->
+        <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 max-w-[95vw] sm:max-w-2xl bg-slate-900/95 backdrop-blur border border-slate-700 rounded-2xl p-2.5 shadow-2xl flex flex-col items-center">
+            <div class="text-[10px] text-slate-400 mb-1.5 font-medium flex items-center justify-between w-full px-2">
+                <span>RENK PALETİ (<span id="selected-color-name">Siyah</span>)</span>
+                <span class="text-indigo-400 font-mono text-[11px]" id="selected-color-hex">#000000</span>
+            </div>
+            <div class="flex items-center space-x-1.5 overflow-x-auto max-w-full py-1 px-1 scrollbar-none" id="palette-container">
+                <!-- Dynamically generated 24 colors -->
+            </div>
+        </div>
+
+        <!-- CHAT DRAWER -->
+        <div id="chat-drawer" class="absolute top-0 right-0 h-full w-80 sm:w-96 bg-slate-900/95 backdrop-blur border-l border-slate-800 z-30 flex flex-col transform translate-x-full transition-transform duration-300 shadow-2xl">
+            <div class="h-14 border-b border-slate-800 px-4 flex items-center justify-between shrink-0">
+                <div class="flex items-center space-x-1 bg-slate-800/80 p-1 rounded-lg">
+                    <button onclick="switchChatTab('tr')" id="tab-tr" class="px-3 py-1 rounded-md text-xs font-semibold bg-indigo-600 text-white transition">TR Sohbet</button>
+                    <button onclick="switchChatTab('en')" id="tab-en" class="px-3 py-1 rounded-md text-xs font-semibold text-slate-400 hover:text-white transition">EN Chat</button>
+                    <button onclick="switchChatTab('faction')" id="tab-faction" class="px-3 py-1 rounded-md text-xs font-semibold text-slate-400 hover:text-white transition">Birlik</button>
+                </div>
+                <button onclick="toggleChat()" class="text-slate-400 hover:text-white p-2"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <!-- Messages List -->
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3 font-sans text-xs flex flex-col">
+                <div class="text-center text-slate-500 my-2">Sohbete hoş geldiniz! Kurallara uyunuz.</div>
+            </div>
+            <!-- Chat Input -->
+            <div class="p-3 border-t border-slate-800 bg-slate-900 shrink-0">
+                <form onsubmit="sendChatMessage(event)" class="flex items-center space-x-2">
+                    <input type="text" id="chat-input" placeholder="Mesaj yaz..." autocomplete="off" class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-indigo-500">
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-xs font-semibold transition"><i class="fa-solid fa-paper-plane"></i></button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODALS -->
+
+    <!-- PROFILE MODAL -->
+    <div id="profile-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-2xl p-6 shadow-2xl relative">
+            <button onclick="closeModal('profile-modal')" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            
+            <div id="logged-out-view">
+                <h2 class="text-lg font-bold text-white mb-1"><i class="fa-solid fa-user-circle text-indigo-500 mr-2"></i>Hesap Yönetimi</h2>
+                <p class="text-xs text-slate-400 mb-6">Piksel yerleştirmek ve sohbet etmek için giriş yapın veya misafir olarak devam edin.</p>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Kullanıcı Adı / E-posta</label>
+                        <input type="text" id="auth-email" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" placeholder="ornek@mail.com">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Şifre</label>
+                        <input type="password" id="auth-pass" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" placeholder="••••••••">
+                    </div>
+                    <div class="flex space-x-2 pt-2">
+                        <button onclick="handleLogin()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-lg text-xs font-semibold transition">Giriş Yap</button>
+                        <button onclick="handleRegister()" class="flex-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 py-2.5 rounded-lg text-xs font-semibold transition">Kayıt Ol</button>
+                    </div>
+                    <div class="relative flex py-2 items-center">
+                        <div class="flex-grow border-t border-slate-800"></div>
+                        <span class="flex-shrink mx-4 text-slate-500 text-[10px]">VEYA</span>
+                        <div class="flex-grow border-t border-slate-800"></div>
+                    </div>
+                    <button onclick="handleGuestLogin()" class="w-full bg-slate-800/60 hover:bg-slate-800 text-indigo-400 border border-indigo-500/30 py-2.5 rounded-lg text-xs font-semibold transition flex items-center justify-center">
+                        <i class="fa-solid fa-user-secret mr-2"></i> Misafir Olarak Devam Et
+                    </button>
+                </div>
+            </div>
+
+            <div id="logged-in-view" class="hidden">
+                <div class="flex items-center space-x-4 mb-6">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-500 to-rose-500 flex items-center justify-center text-xl font-bold text-white shadow-lg" id="profile-avatar-large">G</div>
+                    <div>
+                        <h2 class="text-base font-bold text-white" id="profile-username-display">Kullanıcı</h2>
+                        <p class="text-xs text-indigo-400 font-mono" id="profile-email-display">guest@pixelplace.fun</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 mb-6">
+                    <div class="bg-slate-800/60 border border-slate-700/60 p-3 rounded-xl">
+                        <div class="text-[10px] text-slate-400">Yerleştirilen Piksel</div>
+                        <div class="text-lg font-bold text-indigo-400 font-mono" id="stat-pixels">0</div>
+                    </div>
+                    <div class="bg-slate-800/60 border border-slate-700/60 p-3 rounded-xl">
+                        <div class="text-[10px] text-slate-400">Birlik</div>
+                        <div class="text-sm font-bold text-emerald-400 truncate mt-1" id="stat-faction">Yok</div>
+                    </div>
+                </div>
+
+                <button onclick="handleLogout()" class="w-full bg-rose-600/20 border border-rose-500/40 text-rose-400 hover:bg-rose-600/30 py-2.5 rounded-lg text-xs font-semibold transition">
+                    <i class="fa-solid fa-right-from-bracket mr-2"></i> Çıkış Yap
+                </button>
+            </div>
+        </div>
     </div>
 
-    <!-- 6. PRIVATE CHAT (DM) -->
-    <div id="private-view" class="view-page">
-      <div class="chat-container">
-        <div style="background:#111; padding:8px; text-align:center; color:#f3a64a; font-weight:bold;">Özel Mesajlar (DM)</div>
-        <div id="private-chat-messages" class="chat-messages"></div>
-        <div class="chat-input-area">
-          <input type="text" id="private-chat-input" class="chat-input" placeholder="Özel mesaj yazın...">
-          <button class="chat-send" onclick="sendPrivateMessage()">Gönder</button>
+    <!-- FACTION MODAL -->
+    <div id="faction-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-2xl p-6 shadow-2xl relative">
+            <button onclick="closeModal('faction-modal')" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <h2 class="text-lg font-bold text-white mb-1"><i class="fa-solid fa-shield-halved text-indigo-500 mr-2"></i>Birlik (Faction) Sistemi</h2>
+            <p class="text-xs text-slate-400 mb-6">Birlik kurun, arkadaşlarınızla aynı bölgeyi boyayın ve özel birlik sohbetini kullanın.</p>
+
+            <div id="no-faction-section" class="space-y-4">
+                <div class="bg-slate-800/40 border border-slate-700/60 p-4 rounded-xl">
+                    <h3 class="text-xs font-bold text-white mb-2 uppercase tracking-wide">Yeni Birlik Kur</h3>
+                    <div class="space-y-3">
+                        <input type="text" id="faction-name-input" placeholder="Birlik Adı (örn: Turkiye_Clan)" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+                        <input type="text" id="faction-tag-input" placeholder="Etiket (örn: [TR])" maxlength="6" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+                        <button onclick="createFaction()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded-lg text-xs font-semibold transition">Birliği Oluştur</button>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-xs font-bold text-white mb-2 uppercase tracking-wide">Mevcut Birlikler</h3>
+                    <div id="faction-list" class="max-h-40 overflow-y-auto space-y-2 pr-1">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <div id="has-faction-section" class="hidden space-y-4">
+                <div class="bg-indigo-950/40 border border-indigo-500/30 p-4 rounded-xl flex items-center justify-between">
+                    <div>
+                        <div class="text-xs text-indigo-400 font-semibold" id="my-faction-tag">[TR]</div>
+                        <h3 class="text-base font-bold text-white" id="my-faction-name">Birlik Adı</h3>
+                        <p class="text-[10px] text-slate-400 mt-0.5">Üye Sayısı: <span id="my-faction-members">1</span></p>
+                    </div>
+                    <button onclick="leaveFaction()" class="bg-rose-600/20 border border-rose-500/40 text-rose-400 hover:bg-rose-600/30 px-3 py-2 rounded-lg text-xs font-semibold transition">Birlikten Ayrıl</button>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
 
-    <!-- 7. SEARCH -->
-    <div id="search-view" class="view-page" style="flex-direction:column; align-items:center; padding:30px;">
-      <div class="profile-card" style="width:100%; max-width:400px;">
-        <h3 style="color:#f3a64a;">Kullanıcı Ara</h3>
-        <div class="input-group">
-          <label>Kullanıcı ID (Örn: #0001):</label>
-          <input type="text" id="search-id-input" placeholder="#0001">
-        </div>
-        <button onclick="searchUserProfile()">Profili Bul</button>
-      </div>
-    </div>
+    <!-- Firebase SDKs (App, Auth, Realtime Database) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
-    <!-- 8. AYARLAR -->
-    <div id="settings-view" class="view-page">
-      <h3 style="color:#f3a64a; margin-bottom:10px;">Oyun Ayarları</h3>
-      <div class="setting-card">
-        <span>Kanvas Izgarası (Grid)</span>
-        <input type="checkbox" id="setting-grid" onchange="toggleGridSetting()" style="width:20px; height:20px; cursor:pointer;">
-      </div>
-      
-      <div class="setting-card" style="flex-direction:column; align-items:flex-start; gap:8px;">
-        <b style="color:#f3a64a;">Hakkında (ZMD)</b>
-        <div style="font-size:12px; color:#ccc; line-height:1.5; width:100%;">
-          <b>Sürüm:</b> beta 0.1 (Firebase Cloud)<br>
-          <b>Marka:</b> DIJITAL<br>
-          • Yıldırım123 (Ana Geliştirici)<br>
-          • Alpay TTF (Tasarımcı)<br>
-          • Hexada (Varyant geliştirici)<br>
-          • Berat (Test Uzmanı)<br>
-          • Fatih Kılıç (Moderatör)
-        </div>
-      </div>
-    </div>
+    <script>
+        // ==================== FIREBASE CONFIG (Belgium Server) ====================
+        const firebaseConfig = {
+            databaseURL: "https://artcanvasfun-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "artcanvasfun-default-rtdb"
+        };
 
-  </div>
-</div>
+        let rtdb = null;
+        let isFirebaseConnected = false;
 
-<!-- Modallar -->
-<div id="inspect-modal">
-  <div class="inspect-content">
-    <button class="close-modal" onclick="closeInspect()">✕</button>
-    <h3 style="color:#f3a64a;">Oyuncu Profili</h3>
-    <img id="inspect-avatar" style="width:70px; height:70px; image-rendering:pixelated; border:2px solid #b5651d; border-radius:6px; background:#fff;" src="">
-    <div><b id="inspect-name">İsim</b> <span id="inspect-id" style="color:#888;">#0000</span></div>
-    <div class="stats-box" style="width:100%;">
-      <div>Toplam Piksel: <b id="inspect-total">0</b></div>
-      <div>Favori Renk: <span id="inspect-fav">-</span></div>
-      <div>Klan: <span id="inspect-faction">-</span></div>
-    </div>
-  </div>
-</div>
-
-<script>
-  const FIREBASE_DB_URL = "https://artcanvasfun-default-rtdb.europe-west1.firebasedatabase.app/"; 
-
-  let currentCanvasId = 'classic';
-  let canvasSize = 128;
-  let currentCanvasName = 'Klasik Tuval';
-
-  let userId = localStorage.getItem('art_user_id') || null;
-  let userPass = localStorage.getItem('art_user_pass') || null;
-  let username = 'Yıldırım';
-  let avatarDataURL = null;
-  let totalPixelsPlaced = 0;
-  let colorCounts = {};
-  let myFaction = null;
-
-  let pixelQuota = 100;
-  let maxQuota = 100;
-  let currentColor = '#000000';
-  let avatarColor = '#000000';
-  let factionFlagColor = '#000000';
-  let isDrawMode = true;
-  let brushSize = 1;
-  let showGrid = false;
-
-  const viewport = document.getElementById('viewport');
-  const canvas = document.getElementById('pixelCanvas');
-  const ctx = canvas.getContext('2d');
-  const coordBadge = document.getElementById('coord-badge');
-  const cooldownBadge = document.getElementById('cooldown-badge');
-
-  const avatarCanvas = document.getElementById('avatarCanvas');
-  const avatarCtx = avatarCanvas.getContext('2d');
-  const factionFlagCanvas = document.getElementById('factionFlagCanvas');
-  const factionFlagCtx = factionFlagCanvas.getContext('2d');
-
-  window.onload = async () => {
-    if (!userId || !userPass) {
-      switchView('login');
-      return;
-    }
-    let success = await loadUserDataFromCloud(userId, userPass);
-    if (!success) {
-      switchView('login');
-      return;
-    }
-    initSubCanvases();
-    setupEvents();
-    startCooldownTimer();
-    renderFactionUI();
-    loadCanvasDataFromCloud();
-  };
-
-  window.onresize = () => applyTransform();
-
-  function generateRandomPassword() {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    let pass = "";
-    for (let i = 0; i < 6; i++) {
-      pass += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return pass;
-  }
-
-  async function createNewAccount() {
-    let res = await fetch(`${FIREBASE_DB_URL}/counter.json`);
-    let counter = await res.json() || 1;
-    let newId = '#' + String(counter).padStart(4, '0');
-    let pass = generateRandomPassword();
-
-    await fetch(`${FIREBASE_DB_URL}/counter.json`, {
-      method: 'PUT',
-      body: JSON.stringify(counter + 1)
-    });
-
-    let initialData = {
-      id: newId,
-      pass: pass,
-      name: "Oyuncu_" + newId,
-      totalPixels: 0,
-      colorCounts: {},
-      avatar: null,
-      faction: null
-    };
-
-    let cleanId = newId.replace('#','');
-    await fetch(`${FIREBASE_DB_URL}/users/${cleanId}.json`, {
-      method: 'PUT',
-      body: JSON.stringify(initialData)
-    });
-
-    alert(`Hesabınız Oluşturuldu!\n\nID'niz: ${newId}\nŞifreniz: ${pass}\n\n(Lütfen bu bilgileri unutmayın!)`);
-    document.getElementById('login-id-input').value = newId;
-    document.getElementById('login-pass-input').value = pass;
-  }
-
-  async function loginAccount() {
-    let inputId = document.getElementById('login-id-input').value.trim();
-    let inputPass = document.getElementById('login-pass-input').value.trim();
-    let cleanId = inputId.replace('#','');
-
-    let res = await fetch(`${FIREBASE_DB_URL}/users/${cleanId}.json`);
-    let user = await res.json();
-
-    if (user && user.pass === inputPass) {
-      localStorage.setItem('art_user_id', inputId);
-      localStorage.setItem('art_user_pass', inputPass);
-      alert("Giriş başarılı!");
-      location.reload();
-    } else {
-      alert("Hatalı ID veya Şifre!");
-    }
-  }
-
-  async function loadUserDataFromCloud(id, pass) {
-    let cleanId = id.replace('#','');
-    let res = await fetch(`${FIREBASE_DB_URL}/users/${cleanId}.json`);
-    let user = await res.json();
-
-    if (user && user.pass === pass) {
-      userId = user.id;
-      userPass = user.pass;
-      username = user.name || 'Oyuncu';
-      avatarDataURL = user.avatar || null;
-      totalPixelsPlaced = user.totalPixels || 0;
-      colorCounts = user.colorCounts || {};
-      myFaction = user.faction || null;
-
-      document.getElementById('username-input').value = username;
-      document.getElementById('user-id-display').innerText = `ID: ${userId}`;
-      updateStatsDisplay();
-      return true;
-    }
-    return false;
-  }
-
-  function logoutAccount() {
-    localStorage.removeItem('art_user_id');
-    localStorage.removeItem('art_user_pass');
-    location.reload();
-  }
-
-  async function saveProfile() {
-    let inputVal = document.getElementById('username-input').value.trim();
-    if (!inputVal) { alert("Kullanıcı adı boş olamaz!"); return; }
-
-    username = inputVal;
-    avatarDataURL = avatarCanvas.toDataURL();
-
-    let cleanId = userId.replace('#','');
-    let payload = {
-      id: userId,
-      pass: userPass,
-      name: username,
-      avatar: avatarDataURL,
-      totalPixels: totalPixelsPlaced,
-      colorCounts: colorCounts,
-      faction: myFaction
-    };
-
-    await fetch(`${FIREBASE_DB_URL}/users/${cleanId}.json`, {
-      method: 'PATCH',
-      body: JSON.stringify(payload)
-    });
-
-    alert('Profil kaydedildi!');
-    switchView('home');
-  }
-
-  // Piksel İsrafı Engelleme ve Kota Kontrolü
-  async function setPixelArea(startX, startY, color) {
-    if (pixelQuota <= 0) {
-      alert("Piksel hakkınız bitti! Yenilenmesini bekleyin.");
-      return;
-    }
-
-    let modifiedCount = 0;
-    for (let dx = 0; dx < brushSize; dx++) {
-      for (let dy = 0; dy < brushSize; dy++) {
-        let px = startX + dx, py = startY + dy;
-        if (px >= 0 && px < canvasSize && py >= 0 && py < canvasSize) {
-          let pixelKey = `${currentCanvasId}_${px}_${py}`;
-          let currentPixelColor = canvasDataCache[pixelKey] || '#ffffff';
-          
-          if (currentPixelColor === color) continue; // Aynı renk, israf etme
-
-          canvasDataCache[pixelKey] = color;
-          ctx.fillStyle = color;
-          ctx.fillRect(px, py, 1, 1);
-          totalPixelsPlaced++;
-          colorCounts[color] = (colorCounts[color] || 0) + 1;
-          modifiedCount++;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            rtdb = firebase.database();
+            isFirebaseConnected = true;
+            console.log("Belçika sunuculu Firebase Realtime Database bağlantısı başarılı!");
+        } catch (e) {
+            console.warn("Firebase bağlantı hatası, yerel mod aktif.", e);
         }
-      }
-    }
 
-    if (modifiedCount > 0) {
-      pixelQuota = Math.max(0, pixelQuota - 1);
-      updateCooldownBadge();
-      updateStatsDisplay();
-      saveCanvasDataToCloud();
-    }
-  }
+        // ==================== CONSTANTS & PALETTE (24 Colors) ====================
+        const CANVAS_SIZE = 528;
+        const PALETTE = [
+            { name: "Siyah", hex: "#000000" },
+            { name: "Koyu Gri", hex: "#555555" },
+            { name: "Açık Gri", hex: "#AAAAAA" },
+            { name: "Beyaz", hex: "#FFFFFF" },
+            { name: "Bordo", hex: "#800000" },
+            { name: "Kırmızı", hex: "#E40303" },
+            { name: "Turuncu", hex: "#FF8C00" },
+            { name: "Sarı", hex: "#FFED00" },
+            { name: "Zeytin Yeşili", hex: "#808000" },
+            { name: "Yeşil", hex: "#008026" },
+            { name: "Nane Yeşili", hex: "#BAFFC9" },
+            { name: "Camgöbeği", hex: "#00FFFF" },
+            { name: "Mavi", hex: "#004DFF" },
+            { name: "Lacivert", hex: "#000080" },
+            { name: "Mor", hex: "#750787" },
+            { name: "Magenta", hex: "#FF00FF" },
+            { name: "Pembe", hex: "#FF75A0" },
+            { name: "Kahverengi", hex: "#964B00" },
+            { name: "Ten Rengi", hex: "#E3BC9A" },
+            { name: "Açık Sarı", hex: "#FFFFBA" },
+            { name: "Açık Mavi", hex: "#BAE1FF" },
+            { name: "Açık Şeftali", hex: "#FFDFBA" },
+            { name: "Teal", hex: "#008080" },
+            { name: "Koyu Mor", hex: "#4A0E4E" }
+        ];
 
-  let canvasDataCache = {};
+        // ==================== STATE ====================
+        let canvas, ctx;
+        let pixelData = new Uint8Array(CANVAS_SIZE * CANVAS_SIZE); // 0-23 color indices
+        let selectedColorIndex = 0;
+        let scale = 1.5;
+        let panX = 0;
+        let panY = 0;
+        let isDragging = false;
+        let startX, startY;
+        let showGrid = true;
+        let currentChatTab = 'tr';
+        let unreadChatCount = 0;
+        let isChatOpen = false;
+        let lastPixelPlacedTime = 0;
+        const cooldownTimeMs = 5000; // 5 saniye bekleme süresi
 
-  async function saveCanvasDataToCloud() {
-    await fetch(`${FIREBASE_DB_URL}/canvas_state/${currentCanvasId}.json`, {
-      method: 'PUT',
-      body: JSON.stringify(canvasDataCache)
-    });
-  }
+        let currentUser = {
+            uid: 'guest_' + Math.floor(Math.random() * 100000),
+            username: 'Misafir_' + Math.floor(Math.random() * 1000),
+            email: 'guest@pixelplace.fun',
+            pixelsPlaced: 0,
+            faction: null
+        };
 
-  async function loadCanvasDataFromCloud() {
-    let res = await fetch(`${FIREBASE_DB_URL}/canvas_state/${currentCanvasId}.json`);
-    let data = await res.json();
-    initCanvas();
-    if (data) {
-      canvasDataCache = data;
-      for (let key in data) {
-        let parts = key.split('_');
-        if (parts[0] === currentCanvasId) {
-          let px = parseInt(parts[1]);
-          let py = parseInt(parts[2]);
-          ctx.fillStyle = data[key];
-          ctx.fillRect(px, py, 1, 1);
+        let chatMessages = [
+            { id: 1, user: 'Sistem', text: 'PixelPlace Pro (Belçika Sunucusu) aktif! Canlı piksel savaşları başlasın.', lang: 'tr', time: '12:00' },
+            { id: 2, user: 'System', text: 'PixelPlace Pro (Belgium Server) is active! Enjoy placing pixels.', lang: 'en', time: '12:00' }
+        ];
+
+        let factionsList = [
+            { id: 'f1', name: 'Turkiye Clan', tag: '[TR]', members: 12, leader: 'Admin' },
+            { id: 'f2', name: 'Pixel Army', tag: '[PA]', members: 8, leader: 'Master' }
+        ];
+
+        // ==================== INITIALIZATION ====================
+        window.addEventListener('DOMContentLoaded', () => {
+            canvas = document.getElementById('pixel-canvas');
+            ctx = canvas.getContext('2d');
+            ctx.imageSmoothingEnabled = false;
+
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+
+            initPalette();
+            initCanvasEvents();
+            resetView();
+            updateUI();
+
+            // Load initial pixels & setup Realtime DB listeners
+            if (isFirebaseConnected && rtdb) {
+                setupFirebaseListeners();
+            } else {
+                loadLocalPixels();
+            }
+
+            // Cooldown loop
+            setInterval(updateCooldownDisplay, 200);
+        });
+
+        function resizeCanvas() {
+            const container = document.getElementById('canvas-container');
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            drawCanvas();
         }
-      }
-    }
-    drawGridLines();
-  }
 
-  function startCooldownTimer() {
-    setInterval(() => {
-      if (currentCanvasId === 'classic') { maxQuota = 100; if (pixelQuota < maxQuota) pixelQuota = Math.min(maxQuota, pixelQuota + 20); }
-      else if (currentCanvasId === 'huge') { maxQuota = 50; if (pixelQuota < maxQuota) pixelQuota = Math.min(maxQuota, pixelQuota + 10); }
-      else if (currentCanvasId === 'world') { maxQuota = 10; if (pixelQuota < maxQuota) pixelQuota = Math.min(maxQuota, pixelQuota + 1); }
-      updateCooldownBadge();
-    }, 5000);
-  }
+        // ==================== PALETTE SETUP ====================
+        function initPalette() {
+            const container = document.getElementById('palette-container');
+            container.innerHTML = '';
+            PALETTE.forEach((color, index) => {
+                const btn = document.createElement('button');
+                btn.className = `w-8 h-8 rounded-lg shrink-0 transition transform hover:scale-110 border-2 ${index === selectedColorIndex ? 'border-white scale-110 shadow-lg shadow-indigo-500/50' : 'border-slate-700'}`;
+                btn.style.backgroundColor = color.hex;
+                btn.title = `${color.name} (${color.hex})`;
+                btn.onclick = () => selectColor(index);
+                container.appendChild(btn);
+            });
+            updateSelectedColorInfo();
+        }
 
-  function updateCooldownBadge() {
-    cooldownBadge.innerText = `Piksel Hakkı: ${pixelQuota}/${maxQuota}`;
-  }
+        function selectColor(index) {
+            selectedColorIndex = index;
+            initPalette();
+        }
 
-  function initSubCanvases() {
-    avatarCtx.fillStyle = '#ffffff'; avatarCtx.fillRect(0, 0, 15, 15);
-    if (avatarDataURL) { let img = new Image(); img.onload = () => avatarCtx.drawImage(img, 0, 0); img.src = avatarDataURL; }
-    factionFlagCtx.fillStyle = '#ffffff'; factionFlagCtx.fillRect(0, 0, 15, 15);
+        function updateSelectedColorInfo() {
+            const color = PALETTE[selectedColorIndex];
+            document.getElementById('selected-color-name').innerText = color.name;
+            document.getElementById('selected-color-hex').innerText = color.hex;
+        }
 
-    setupMiniCanvasDrawing(avatarCanvas, avatarCtx, '#avatar-palette .mini-color-box', (c) => avatarColor = c);
-    setupMiniCanvasDrawing(factionFlagCanvas, factionFlagCtx, '#faction-palette .mini-color-box', (c) => factionFlagColor = c);
-  }
+        // ==================== CANVAS RENDERING & INTERACTION ====================
+        function drawCanvas() {
+            ctx.fillStyle = '#090d16';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  function setupMiniCanvasDrawing(targetCanvas, targetCtx, paletteSelector, colorSetter) {
-    document.querySelectorAll(paletteSelector).forEach(box => {
-      box.addEventListener('click', () => {
-        document.querySelectorAll(paletteSelector).forEach(b => b.classList.remove('selected'));
-        box.classList.add('selected');
-        colorSetter(box.getAttribute('data-color'));
-      });
-    });
+            ctx.save();
+            ctx.translate(panX, panY);
+            ctx.scale(scale, scale);
 
-    let isDrawing = false;
-    const draw = (e) => {
-      const rect = targetCanvas.getBoundingClientRect();
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      const x = Math.floor((clientX - rect.left) / (rect.width / 15));
-      const y = Math.floor((clientY - rect.top) / (rect.height / 15));
-      if (x >= 0 && x < 15 && y >= 0 && y < 15) {
-        targetCtx.fillStyle = (paletteSelector.includes('avatar') ? avatarColor : factionFlagColor);
-        targetCtx.fillRect(x, y, 1, 1);
-      }
-    };
+            // Draw canvas background board (528x528)
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
 
-    targetCanvas.addEventListener('mousedown', (e) => { isDrawing = true; draw(e); });
-    window.addEventListener('mousemove', (e) => { if (isDrawing) draw(e); });
-    window.addEventListener('mouseup', () => { isDrawing = false; });
-    targetCanvas.addEventListener('touchstart', (e) => { isDrawing = true; draw(e); }, {passive: false});
-    targetCanvas.addEventListener('touchmove', (e) => { if (isDrawing) { e.preventDefault(); draw(e); } }, {passive: false});
-    targetCanvas.addEventListener('touchend', () => { isDrawing = false; });
-  }
+            // Draw pixels
+            for (let y = 0; y < CANVAS_SIZE; y++) {
+                for (let x = 0; x < CANVAS_SIZE; x++) {
+                    const colorIndex = pixelData[y * CANVAS_SIZE + x];
+                    if (colorIndex > 0 && colorIndex < PALETTE.length) {
+                        ctx.fillStyle = PALETTE[colorIndex].hex;
+                        ctx.fillRect(x, y, 1, 1);
+                    }
+                }
+            }
 
-  function openCanvas(id, size, name) {
-    currentCanvasId = id; canvasSize = size; currentCanvasName = name;
-    canvas.width = canvasSize; canvas.height = canvasSize;
-    pixelQuota = (id === 'classic') ? 100 : (id === 'huge') ? 50 : 10;
-    updateCooldownBadge();
-    loadCanvasDataFromCloud(); switchView('canvas'); centerCanvas();
-  }
+            // Draw grid lines if zoomed in enough
+            if (showGrid && scale > 12) {
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.08)';
+                ctx.lineWidth = 0.05;
+                ctx.beginPath();
+                for (let x = 0; x <= CANVAS_SIZE; x++) {
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, CANVAS_SIZE);
+                }
+                for (let y = 0; y <= CANVAS_SIZE; y++) {
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(CANVAS_SIZE, y);
+                }
+                ctx.stroke();
+            }
 
-  function initCanvas() {
-    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvasSize, canvasSize);
-    drawGridLines();
-  }
+            ctx.restore();
+        }
 
-  function drawGridLines() {
-    if (!showGrid || scale < 8) return;
-    ctx.strokeStyle = 'rgba(0,0,0,0.1)'; ctx.lineWidth = 0.5 / scale;
-    ctx.beginPath();
-    for (let x = 0; x <= canvasSize; x++) { ctx.moveTo(x, 0); ctx.lineTo(x, canvasSize); }
-    for (let y = 0; y <= canvasSize; y++) { ctx.moveTo(0, y); ctx.lineTo(canvasSize, y); }
-    ctx.stroke();
-  }
+        function resetView() {
+            const container = document.getElementById('canvas-container');
+            scale = Math.min(container.clientWidth, container.clientHeight) / (CANVAS_SIZE * 0.7);
+            panX = (container.clientWidth - CANVAS_SIZE * scale) / 2;
+            panY = (container.clientHeight - CANVAS_SIZE * scale) / 2;
+            drawCanvas();
+        }
 
-  function centerCanvas() {
-    const rect = viewport.getBoundingClientRect();
-    scale = canvasSize > 128 ? 0.8 : 3;
-    panX = (rect.width - canvasSize * scale) / 2;
-    panY = (rect.height - canvasSize * scale) / 2;
-    applyTransform();
-  }
+        function zoomIn() {
+            scale = Math.min(scale * 1.25, 60);
+            drawCanvas();
+        }
 
-  function applyTransform() {
-    canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
-    canvas.style.transformOrigin = '0 0';
-    updateCoordBadge();
-  }
+        function zoomOut() {
+            scale = Math.max(scale / 1.25, 0.5);
+            drawCanvas();
+        }
 
-  function updateCoordBadge() {
-    const rect = viewport.getBoundingClientRect();
-    const centerX = rect.width / 2, centerY = rect.height / 2;
-    const canvasX = Math.max(0, Math.min(canvasSize - 1, Math.floor((centerX - panX) / scale)));
-    const canvasY = Math.max(0, Math.min(canvasSize - 1, Math.floor((centerY - panY) / scale)));
-    coordBadge.innerText = `${currentCanvasName} | X: ${canvasX}, Y: ${canvasY}`;
-  }
+        function toggleGrid() {
+            showGrid = !showGrid;
+            const btn = document.getElementById('grid-toggle-btn');
+            btn.classList.toggle('text-indigo-400', showGrid);
+            btn.classList.toggle('text-slate-500', !showGrid);
+            drawCanvas();
+        }
 
-  function setBrushSize(size) {
-    brushSize = size;
-    document.querySelectorAll('.size-btn').forEach(btn => btn.classList.remove('active'));
-    document.getElementById(`btn-size-${size}`).classList.add('active');
-  }
+        // Pan and Zoom Event Handlers
+        let touchStartDist = 0;
+        let isPinching = false;
 
-  let scale = 3, panX = 0, panY = 0;
-  let isDragging = false, startX, startY, initialPinchDist = null, initialScale = scale;
+        function initCanvasEvents() {
+            canvas.addEventListener('mousedown', (e) => {
+                if (e.button === 0) {
+                    isDragging = true;
+                    startX = e.clientX - panX;
+                    startY = e.clientY - panY;
+                }
+            });
 
-  function setupEvents() {
-    document.querySelectorAll('#bottom-palette .color-box').forEach(box => {
-      box.addEventListener('click', () => {
-        document.querySelectorAll('#bottom-palette .color-box').forEach(b => b.classList.remove('selected'));
-        box.classList.add('selected');
-        currentColor = box.getAttribute('data-color');
-      });
-    });
+            window.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
 
-    viewport.addEventListener('touchstart', handleTouchStart, {passive: false});
-    viewport.addEventListener('touchmove', handleTouchMove, {passive: false});
-    viewport.addEventListener('touchend', handleTouchEnd);
-    viewport.addEventListener('mousedown', handleMouseDown);
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
-    viewport.addEventListener('wheel', handleWheel, {passive: false});
-  }
+                const canvasX = Math.floor((mouseX - panX) / scale);
+                const canvasY = Math.floor((mouseY - panY) / scale);
 
-  function toggleDrawMode(enable) {
-    isDrawMode = enable;
-    document.getElementById('tool-pencil').classList.toggle('active', isDrawMode);
-    document.getElementById('tool-drag').classList.toggle('active', !isDrawMode);
-  }
+                if (canvasX >= 0 && canvasX < CANVAS_SIZE && canvasY >= 0 && canvasY < CANVAS_SIZE) {
+                    document.getElementById('coord-x').innerText = canvasX;
+                    document.getElementById('coord-y').innerText = canvasY;
+                }
 
-  function handleTouchStart(e) {
-    if (e.touches.length === 1) {
-      if (isDrawMode) drawPixelAtTouch(e.touches[0]);
-      else { isDragging = true; startX = e.touches[0].clientX - panX; startY = e.touches[0].clientY - panY; }
-    } else if (e.touches.length === 2 && !isDrawMode) {
-      isDragging = false;
-      initialPinchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-      initialScale = scale;
-    }
-  }
+                if (isDragging) {
+                    panX = e.clientX - startX;
+                    panY = e.clientY - startY;
+                    drawCanvas();
+                }
+            });
 
-  function handleTouchMove(e) {
-    e.preventDefault();
-    if (e.touches.length === 1) {
-      if (isDrawMode) drawPixelAtTouch(e.touches[0]);
-      else if (isDragging) { panX = e.touches[0].clientX - startX; panY = e.touches[0].clientY - startY; applyTransform(); }
-    } else if (e.touches.length === 2 && initialPinchDist && !isDrawMode) {
-      const newDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-      scale = Math.min(Math.max(0.2, initialScale * (newDist / initialPinchDist)), 25);
-      applyTransform();
-    }
-  }
+            window.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
 
-  function handleTouchEnd() { isDragging = false; initialPinchDist = null; }
+            canvas.addEventListener('click', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
 
-  function handleMouseDown(e) {
-    if (isDrawMode && e.button === 0) drawPixelAtMouse(e);
-    else { isDragging = true; startX = e.clientX - panX; startY = e.clientY - panY; }
-  }
+                const canvasX = Math.floor((mouseX - panX) / scale);
+                const canvasY = Math.floor((mouseY - panY) / scale);
 
-  function handleMouseMove(e) {
-    if (isDrawMode && e.buttons === 1) drawPixelAtMouse(e);
-    else if (isDragging) { panX = e.clientX - startX; panY = e.clientY - startY; applyTransform(); }
-  }
+                if (canvasX >= 0 && canvasX < CANVAS_SIZE && canvasY >= 0 && canvasY < CANVAS_SIZE) {
+                    placePixel(canvasX, canvasY);
+                }
+            });
 
-  function handleMouseUp() { isDragging = false; }
-  
-  function handleWheel(e) {
-    e.preventDefault();
-    const zoomFactor = e.deltaY < 0 ? 1.15 : 0.85;
-    const rect = canvas.getBoundingClientRect();
-    
-    // Fare imlecine göre zoom odaklama
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-    
-    let newScale = Math.min(Math.max(0.2, scale * zoomFactor), 25);
-    
-    panX = mouseX - (mouseX - panX) * (newScale / scale);
-    panY = mouseY - (mouseY - panY) * (newScale / scale);
-    scale = newScale;
-    
-    applyTransform();
-  }
+            canvas.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const zoomFactor = e.deltaY < 0 ? 1.15 : 0.85;
+                const newScale = Math.max(0.5, Math.min(60, scale * zoomFactor));
 
-  function drawPixelAtTouch(touch) {
-    const rect = canvas.getBoundingClientRect();
-    setPixelArea(Math.floor((touch.clientX - rect.left) / scale), Math.floor((touch.clientY - rect.top) / scale), currentColor);
-  }
+                const rect = canvas.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
 
-  function drawPixelAtMouse(e) {
-    const rect = canvas.getBoundingClientRect();
-    setPixelArea(Math.floor((e.clientX - rect.left) / scale), Math.floor((e.clientY - rect.top) / scale), currentColor);
-  }
+                panX = mouseX - (mouseX - panX) * (newScale / scale);
+                panY = mouseY - (mouseY - panY) * (newScale / scale);
+                scale = newScale;
 
-  function toggleGridSetting() {
-    showGrid = document.getElementById('setting-grid').checked;
-    loadCanvasDataFromCloud();
-  }
+                drawCanvas();
+            }, { passive: false });
 
-  function updateStatsDisplay() {
-    document.getElementById('stat-total').innerText = totalPixelsPlaced;
-    let favColor = Object.keys(colorCounts).length > 0 ? Object.keys(colorCounts).reduce((a, b) => colorCounts[a] > colorCounts[b] ? a : b) : '-';
-    document.getElementById('stat-fav-color').innerText = favColor;
-    document.getElementById('stat-faction').innerText = myFaction ? myFaction.name : 'Yok';
-  }
+            // Touch events for mobile/tablet
+            canvas.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) {
+                    isDragging = true;
+                    startX = e.touches[0].clientX - panX;
+                    startY = e.touches[0].clientY - panY;
+                } else if (e.touches.length === 2) {
+                    isPinching = true;
+                    isDragging = false;
+                    touchStartDist = Math.hypot(
+                        e.touches[0].clientX - e.touches[1].clientX,
+                        e.touches[0].clientY - e.touches[1].clientY
+                    );
+                }
+            });
 
-  function switchView(viewName) {
-    document.querySelectorAll('.view-page').forEach(v => v.classList.remove('active'));
-    document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById(`${viewName}-view`).classList.add('active');
-    let btn = document.getElementById(`btn-${viewName}`);
-    if (btn) btn.classList.add('active');
-  }
+            canvas.addEventListener('touchmove', (e) => {
+                if (isDragging && e.touches.length === 1) {
+                    panX = e.touches[0].clientX - startX;
+                    panY = e.touches[0].clientY - startY;
+                    drawCanvas();
+                } else if (isPinching && e.touches.length === 2) {
+                    const dist = Math.hypot(
+                        e.touches[0].clientX - e.touches[1].clientX,
+                        e.touches[0].clientY - e.touches[1].clientY
+                    );
+                    const factor = dist / touchStartDist;
+                    scale = Math.max(0.5, Math.min(60, scale * factor));
+                    touchStartDist = dist;
+                    drawCanvas();
+                }
+            });
 
-  async function createFaction() {
-    let name = document.getElementById('new-faction-name').value.trim();
-    let desc = document.getElementById('new-faction-desc').value.trim();
-    if (!name) { alert("Klan adı boş olamaz!"); return; }
+            canvas.addEventListener('touchend', (e) => {
+                if (e.touches.length < 2) isPinching = false;
+                if (e.touches.length === 0) isDragging = false;
+            });
+        }
 
-    let fid = '#FA' + Math.floor(10 + Math.random() * 90);
-    myFaction = { id: fid, name: name, desc: desc, flag: factionFlagCanvas.toDataURL(), members: [{name: username, id: userId, role: 'Lider'}] };
-    
-    await saveProfile();
-    renderFactionUI(); updateStatsDisplay();
-    alert(`Klan kuruldu! FID: ${fid}`);
-  }
+        // ==================== PIXEL PLACEMENT & REALTIME DB SYNC ====================
+        function placePixel(x, y) {
+            const now = Date.now();
+            const elapsed = now - lastPixelPlacedTime;
 
-  async function joinFaction() {
-    let fid = document.getElementById('join-fid-input').value.trim();
-    if (!fid) return;
-    myFaction = { id: fid, name: "Klan " + fid, desc: "Açıklama", members: [{name: username, id: userId, role: 'Üye'}] };
-    
-    await saveProfile();
-    renderFactionUI(); updateStatsDisplay();
-    alert("Klana katıldın!");
-  }
+            if (elapsed < cooldownTimeMs) {
+                showToast("Lütfen bekleme süresinin bitmesini bekleyin!", "amber");
+                return;
+            }
 
-  async function leaveFaction() {
-    if (confirm("Klandan çıkmak istiyor musun?")) {
-      myFaction = null;
-      await saveProfile();
-      renderFactionUI(); updateStatsDisplay();
-    }
-  }
+            const index = y * CANVAS_SIZE + x;
+            if (pixelData[index] === selectedColorIndex) return;
 
-  function renderFactionUI() {
-    if (myFaction) {
-      document.getElementById('faction-not-joined').style.display = 'none';
-      document.getElementById('faction-joined').style.display = 'flex';
-      document.getElementById('my-faction-name').innerText = myFaction.name;
-      document.getElementById('my-faction-id').innerText = myFaction.id;
-      document.getElementById('my-faction-flag').src = myFaction.flag || '';
-    } else {
-      document.getElementById('faction-not-joined').style.display = 'flex';
-      document.getElementById('faction-joined').style.display = 'none';
-    }
-  }
+            pixelData[index] = selectedColorIndex;
+            lastPixelPlacedTime = now;
+            currentUser.pixelsPlaced++;
+            updateUI();
+            drawCanvas();
 
-  function sendChatMessage() {
-    const input = document.getElementById('chat-input');
-    const msg = input.value.trim();
-    if (msg) { appendMessage('chat-messages', username, userId, avatarDataURL, msg); input.value = ''; }
-  }
+            // Save to Belçika Realtime Database
+            savePixelToDatabase(x, y, selectedColorIndex);
+        }
 
-  function sendFactionChatMessage() {
-    const input = document.getElementById('faction-chat-input');
-    const msg = input.value.trim();
-    if (msg && myFaction) { appendMessage('faction-chat-messages', username, userId, avatarDataURL, '[Klan] ' + msg); input.value = ''; }
-  }
+        function updateCooldownDisplay() {
+            const now = Date.now();
+            const elapsed = now - lastPixelPlacedTime;
+            const badge = document.getElementById('cooldown-badge');
+            const text = document.getElementById('cooldown-text');
 
-  function sendPrivateMessage() {
-    const input = document.getElementById('private-chat-input');
-    const msg = input.value.trim();
-    if (msg) { appendMessage('private-chat-messages', username, userId, avatarDataURL, `(DM) ${msg}`); input.value = ''; }
-  }
+            if (elapsed < cooldownTimeMs) {
+                badge.classList.remove('hidden');
+                badge.classList.add('flex');
+                const remaining = Math.ceil((cooldownTimeMs - elapsed) / 1000);
+                text.innerText = `${remaining}s`;
+            } else {
+                badge.classList.add('hidden');
+                badge.classList.remove('flex');
+            }
+        }
 
-  function appendMessage(containerId, name, id, avatar, text) {
-    const chatBox = document.getElementById(containerId);
-    const msgDiv = document.createElement('div'); msgDiv.className = 'msg';
-    msgDiv.innerHTML = `
-      <img class="msg-avatar" src="${avatar || ''}">
-      <div class="msg-body">
-        <div class="sender">${name}<span class="tag">${id}</span></div>
-        <div>${text}</div>
-      </div>
-    `;
-    chatBox.appendChild(msgDiv); chatBox.scrollTop = chatBox.scrollHeight;
-  }
+        function savePixelToDatabase(x, y, colorIndex) {
+            if (isFirebaseConnected && rtdb) {
+                rtdb.ref(`pixels/${x}_${y}`).set({
+                    x: x,
+                    y: y,
+                    color: colorIndex,
+                    user: currentUser.username,
+                    timestamp: Date.now()
+                }).catch(err => console.error("Piksel kaydedilemedi:", err));
+            } else {
+                localStorage.setItem('pixelplace_data', btoa(String.fromCharCode.apply(null, pixelData)));
+            }
+        }
 
-  async function searchUserProfile() {
-    let queryId = document.getElementById('search-id-input').value.trim();
-    if (!queryId) return;
+        function setupFirebaseListeners() {
+            // Load all existing pixels once
+            rtdb.ref('pixels').once('value', snapshot => {
+                const val = snapshot.val();
+                if (val) {
+                    Object.keys(val).forEach(key => {
+                        const p = val[key];
+                        if (p && p.x !== undefined && p.y !== undefined) {
+                            const idx = p.y * CANVAS_SIZE + p.x;
+                            pixelData[idx] = p.color;
+                        }
+                    });
+                    drawCanvas();
+                }
+            });
 
-    let res = await fetch(`${FIREBASE_DB_URL}/users/${queryId.replace('#','')}.json`);
-    let user = await res.json();
-    if (user) {
-      inspectUser(user.name, user.id, user.avatar, user.totalPixels || 0, user.faction ? user.faction.name : 'Yok');
-    } else {
-      alert("Bu ID'ye sahip bulut kullanıcısı bulunamadı!");
-    }
-  }
+            // Listen for live pixel changes
+            rtdb.ref('pixels').on('child_added', snapshot => {
+                updatePixelFromDB(snapshot.val());
+            });
+            rtdb.ref('pixels').on('child_changed', snapshot => {
+                updatePixelFromDB(snapshot.val());
+            });
 
-  function inspectUser(name, id, avatar, total, faction) {
-    document.getElementById('inspect-name').innerText = name;
-    document.getElementById('inspect-id').innerText = id;
-    document.getElementById('inspect-avatar').src = avatar || '';
-    document.getElementById('inspect-total').innerText = total;
-    document.getElementById('inspect-faction').innerText = faction;
-    document.getElementById('inspect-modal').style.display = 'flex';
-  }
-  function closeInspect() { document.getElementById('inspect-modal').style.display = 'none'; }
-</script>
+            // Listen for live chat messages
+            rtdb.ref('messages').limitToLast(50).on('child_added', snapshot => {
+                const msg = snapshot.val();
+                if (msg && !chatMessages.some(m => m.id === msg.id)) {
+                    chatMessages.push(msg);
+                    renderChatMessages();
+                }
+            });
+        }
+
+        function updatePixelFromDB(p) {
+            if (p && p.x !== undefined && p.y !== undefined) {
+                const idx = p.y * CANVAS_SIZE + p.x;
+                if (pixelData[idx] !== p.color) {
+                    pixelData[idx] = p.color;
+                    drawCanvas();
+                }
+            }
+        }
+
+        function loadLocalPixels() {
+            const saved = localStorage.getItem('pixelplace_data');
+            if (saved) {
+                try {
+                    const binary = atob(saved);
+                    for (let i = 0; i < binary.length; i++) {
+                        pixelData[i] = binary.charCodeAt(i);
+                    }
+                } catch (e) {
+                    console.error("Local veri yüklenemedi:", e);
+                }
+            }
+            drawCanvas();
+        }
+
+        // ==================== CHAT SYSTEM ====================
+        function toggleChat() {
+            isChatOpen = !isChatOpen;
+            const drawer = document.getElementById('chat-drawer');
+            if (isChatOpen) {
+                drawer.classList.remove('translate-x-full');
+                unreadChatCount = 0;
+                document.getElementById('chat-badge').classList.add('hidden');
+            } else {
+                drawer.classList.add('translate-x-full');
+            }
+        }
+
+        function switchChatTab(tab) {
+            currentChatTab = tab;
+            ['tr', 'en', 'faction'].forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                if (t === tab) {
+                    btn.className = "px-3 py-1 rounded-md text-xs font-semibold bg-indigo-600 text-white transition";
+                } else {
+                    btn.className = "px-3 py-1 rounded-md text-xs font-semibold text-slate-400 hover:text-white transition";
+                }
+            });
+            renderChatMessages();
+        }
+
+        function sendChatMessage(e) {
+            e.preventDefault();
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const msg = {
+                id: 'msg_' + Date.now() + '_' + Math.floor(Math.random()*1000),
+                user: currentUser.username,
+                text: text,
+                lang: currentChatTab === 'faction' ? 'faction' : currentChatTab,
+                factionId: currentUser.faction ? currentUser.faction.id : null,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                timestamp: Date.now()
+            };
+
+            if (isFirebaseConnected && rtdb) {
+                rtdb.ref('messages').push(msg);
+            } else {
+                chatMessages.push(msg);
+                renderChatMessages();
+            }
+
+            input.value = '';
+        }
+
+        function renderChatMessages() {
+            const container = document.getElementById('chat-messages');
+            container.innerHTML = '';
+
+            const filtered = chatMessages.filter(m => {
+                if (currentChatTab === 'faction') return m.lang === 'faction' && m.factionId === (currentUser.faction ? currentUser.faction.id : null);
+                return m.lang === currentChatTab;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="text-center text-slate-500 my-auto">Henüz mesaj yok. İlk mesajı sen yaz!</div>`;
+                return;
+            }
+
+            filtered.forEach(m => {
+                const div = document.createElement('div');
+                div.className = "flex flex-col bg-slate-800/40 border border-slate-700/50 p-2.5 rounded-xl";
+                div.innerHTML = `
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="font-bold text-indigo-400 text-[11px]">${escapeHtml(m.user)}</span>
+                        <span class="text-[9px] text-slate-500">${m.time || ''}</span>
+                    </div>
+                    <p class="text-slate-200 text-xs break-words">${escapeHtml(m.text)}</p>
+                `;
+                container.appendChild(div);
+            });
+
+            container.scrollTop = container.scrollHeight;
+
+            if (!isChatOpen) {
+                unreadChatCount++;
+                const badge = document.getElementById('chat-badge');
+                badge.innerText = unreadChatCount;
+                badge.classList.remove('hidden');
+            }
+        }
+
+        function escapeHtml(text) {
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // ==================== AUTH & PROFILE ====================
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+            if (id === 'faction-modal') renderFactionList();
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        function handleGuestLogin() {
+            currentUser.username = 'Misafir_' + Math.floor(Math.random() * 10000);
+            currentUser.email = 'guest@pixelplace.fun';
+            updateUI();
+            closeModal('profile-modal');
+            showToast("Misafir olarak giriş yapıldı!", "indigo");
+        }
+
+        function handleLogin() {
+            const email = document.getElementById('auth-email').value;
+            if (!email) {
+                showToast("Lütfen geçerli bir e-posta girin!", "rose");
+                return;
+            }
+            currentUser.username = email.split('@')[0];
+            currentUser.email = email;
+            updateUI();
+            closeModal('profile-modal');
+            showToast("Başarıyla giriş yapıldı!", "indigo");
+        }
+
+        function handleRegister() {
+            handleLogin();
+        }
+
+        function handleLogout() {
+            currentUser = {
+                uid: 'guest_' + Math.floor(Math.random() * 100000),
+                username: 'Misafir_' + Math.floor(Math.random() * 1000),
+                email: 'guest@pixelplace.fun',
+                pixelsPlaced: 0,
+                faction: null
+            };
+            updateUI();
+            closeModal('profile-modal');
+            showToast("Çıkış yapıldı.", "amber");
+        }
+
+        function updateUI() {
+            document.getElementById('nav-username').innerText = currentUser.username;
+            document.getElementById('nav-avatar').innerText = currentUser.username.charAt(0).toUpperCase();
+            
+            document.getElementById('profile-username-display').innerText = currentUser.username;
+            document.getElementById('profile-email-display').innerText = currentUser.email;
+            document.getElementById('profile-avatar-large').innerText = currentUser.username.charAt(0).toUpperCase();
+            
+            document.getElementById('stat-pixels').innerText = currentUser.pixelsPlaced;
+            document.getElementById('stat-faction').innerText = currentUser.faction ? currentUser.faction.name : 'Yok';
+            document.getElementById('nav-faction-name').innerText = currentUser.faction ? currentUser.faction.tag : 'Birlik Yok';
+
+            if (currentUser.email !== 'guest@pixelplace.fun') {
+                document.getElementById('logged-out-view').classList.add('hidden');
+                document.getElementById('logged-in-view').classList.remove('hidden');
+            } else {
+                document.getElementById('logged-out-view').classList.remove('hidden');
+                document.getElementById('logged-in-view').classList.add('hidden');
+            }
+
+            if (currentUser.faction) {
+                document.getElementById('no-faction-section').classList.add('hidden');
+                document.getElementById('has-faction-section').classList.remove('hidden');
+                document.getElementById('my-faction-tag').innerText = currentUser.faction.tag;
+                document.getElementById('my-faction-name').innerText = currentUser.faction.name;
+                document.getElementById('my-faction-members').innerText = currentUser.faction.members;
+            } else {
+                document.getElementById('no-faction-section').classList.remove('hidden');
+                document.getElementById('has-faction-section').classList.add('hidden');
+            }
+        }
+
+        // ==================== FACTION SYSTEM ====================
+        function createFaction() {
+            const name = document.getElementById('faction-name-input').value.trim();
+            const tag = document.getElementById('faction-tag-input').value.trim();
+
+            if (!name || !tag) {
+                showToast("Lütfen birlik adı ve etiketi girin!", "rose");
+                return;
+            }
+
+            const newFaction = {
+                id: 'f_' + Date.now(),
+                name: name,
+                tag: tag.startsWith('[') ? tag : `[${tag}]`,
+                members: 1,
+                leader: currentUser.username
+            };
+
+            currentUser.faction = newFaction;
+            factionsList.push(newFaction);
+            updateUI();
+            closeModal('faction-modal');
+            showToast("Birlik başarıyla kuruldu!", "indigo");
+        }
+
+        function renderFactionList() {
+            const container = document.getElementById('faction-list');
+            container.innerHTML = '';
+
+            factionsList.forEach(f => {
+                const div = document.createElement('div');
+                div.className = "flex items-center justify-between bg-slate-800/60 border border-slate-700/60 p-3 rounded-xl";
+                div.innerHTML = `
+                    <div>
+                        <span class="text-xs font-bold text-indigo-400 mr-2">${f.tag}</span>
+                        <span class="text-xs font-semibold text-white">${f.name}</span>
+                        <div class="text-[10px] text-slate-400 mt-0.5">Üye: ${f.members} | Lider: ${f.leader}</div>
+                    </div>
+                    <button onclick="joinFaction('${f.id}')" class="bg-indigo-600/20 border border-indigo-500/40 text-indigo-300 hover:bg-indigo-600/30 px-3 py-1.5 rounded-lg text-xs font-semibold transition">Katıl</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function joinFaction(id) {
+            const f = factionsList.find(item => item.id === id);
+            if (f) {
+                currentUser.faction = f;
+                f.members++;
+                updateUI();
+                closeModal('faction-modal');
+                showToast(`${f.name} birliğine katıldınız!`, "indigo");
+            }
+        }
+
+        function leaveFaction() {
+            if (currentUser.faction) {
+                currentUser.faction.members--;
+                currentUser.faction = null;
+                updateUI();
+                showToast("Birlikten ayrıldınız.", "amber");
+            }
+        }
+
+        // ==================== TOAST NOTIFICATION ====================
+        function showToast(message, type = 'indigo') {
+            const toast = document.createElement('div');
+            let bg = 'bg-indigo-600';
+            if (type === 'rose') bg = 'bg-rose-600';
+            if (type === 'amber') bg = 'bg-amber-600';
+
+            toast.className = `fixed bottom-6 right-6 ${bg} text-white px-4 py-2.5 rounded-xl shadow-2xl text-xs font-semibold z-50 transform translate-y-10 opacity-0 transition-all duration-300 flex items-center space-x-2`;
+            toast.innerHTML = `<i class="fa-solid fa-circle-info"></i> <span>${message}</span>`;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-10', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-10', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    </script>
 </body>
 </html>
